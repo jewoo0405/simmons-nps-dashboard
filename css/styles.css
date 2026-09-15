@@ -200,18 +200,14 @@ body { font-family: 'Pretendard','Noto Sans KR',sans-serif; background: #f1f5f9;
 /* 경고 배지 */
 .alert-box { background: #fff7ed; border: 1.5px solid #fb923c; border-radius: 10px; padding: 12px 16px; margin-bottom: 16px; font-size: 13px; color: #9a3412; }
 
-/* 인쇄 */
-@media print {
-  .header { position: static; }
-  .upload-zone, .tab-nav, .btn, #uploadSection { display: none !important; }
-  .dashboard { display: block !important; padding: 0; max-width: 100%; }
-  .section-header { break-before: auto; }
-  .voc-grid { grid-template-columns: repeat(2,1fr); }
-  .issue-ranking { grid-template-columns: repeat(3,1fr); }
-  .channel-cards { grid-template-columns: repeat(5,1fr); }
-  body { background: white; font-size: 11px; }
-  .channel-card, .voc-panel, .issue-card, .chart-container { box-shadow: none; border: 1px solid #e2e8f0; }
-  @page { size: A4 landscape; margin: 10mm; }
+/* 인쇄 — 규격/스케일 설정은 index.html @media print 참조 */
+@media print{
+  .header{position:static!important}
+  .upload-zone,.tab-nav,.btn,#uploadSection{display:none!important}
+  .dashboard{display:block!important;padding:0!important;max-width:100%!important}
+  .channel-card,.voc-panel,.issue-card,.chart-container{
+    box-shadow:none!important;border:1px solid #e2e8f0!important
+  }
 }
 
 /* 반응형 */

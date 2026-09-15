@@ -264,57 +264,63 @@ input,select,button,textarea{font-family:'Pretendard','Malgun Gothic',sans-serif
 .tch-btn.act{background:var(--dark);color:#fff;border-color:var(--dark)}
 .tch-btn.ch-act{color:#fff;border-color:transparent}
 
-/* 인쇄 */
+/* ── 인쇄/PDF: A4 가로 규격 고정 (297×210mm) ── */
 @media print{
-  /* ── 색상 강제 보존 (배경색·글자색 모두 원본 출력) ── */
   *,*::before,*::after{
     -webkit-print-color-adjust:exact!important;
     print-color-adjust:exact!important;
     color-adjust:exact!important
   }
 
-  /* ── 페이지 설정: A4 가로 ── */
-  @page{size:A4 landscape;margin:8mm}
+  /* A4 가로 명시 규격: 여백 상하 8mm·좌우 10mm → 인쇄 영역 277×194mm */
+  @page{size:297mm 210mm;margin:8mm 10mm}
 
-  /* ── 전체 축소 (A4 가로 폭에 맞게) ── */
-  html{zoom:.82}
-  body{background:#f0f3f8!important;font-size:9px!important}
+  /* 콘텐츠(≈1380px) → 인쇄 영역(277mm≈1048px) 비율 맞춤 */
+  html{zoom:.76}
+  body{
+    width:277mm!important;
+    max-width:277mm!important;
+    font-size:8.5pt!important;
+    background:#f0f3f8!important;
+    margin:0!important;padding:0!important
+  }
 
-  /* ── 불필요 요소 숨김 ── */
+  /* 불필요 요소 숨김 */
   .tab-nav,.btn,.tch-btns,#trendChBtns,#t6,
   .modal-ov,#upPage,.filter-bar,.loaded-summary,
   .mpick-wrap,.mpop{display:none!important}
 
-  /* ── 헤더: 고정 해제 / 그림자 제거 ── */
-  .hdr{position:static!important;box-shadow:none!important;padding:7px 16px!important}
+  /* 헤더 */
+  .hdr{position:static!important;box-shadow:none!important;padding:6px 14px!important}
 
-  /* ── 대시보드 표시 ── */
-  .dash{display:block!important;padding:0!important;max-width:100%!important}
+  /* 대시보드 */
+  .dash{display:block!important;width:100%!important;max-width:100%!important;padding:0!important}
 
-  /* ── 탭 섹션 전체 표시 + 페이지 단락 ── */
+  /* 탭 섹션: 전체 표시 + 페이지 단락 */
   .tab-c{display:block!important;break-before:page;page-break-before:always}
   .tab-c:first-child{break-before:auto;page-break-before:auto}
 
-  /* ── 그리드 레이아웃 고정 ── */
+  /* 그리드 레이아웃 고정 */
   .ch-cards{grid-template-columns:repeat(5,1fr)!important}
   .voc-grid{grid-template-columns:repeat(2,1fr)!important}
   .iss-grid{grid-template-columns:repeat(3,1fr)!important}
   #storeTypeGrid{grid-template-columns:repeat(5,1fr)!important}
 
-  /* ── 박스 내부 짤림 방지 ── */
+  /* 박스 내부 짤림 방지 */
   .sum-banner,.chart-box,.voc-crd,.iss-card,
   #storeTypeGrid>div,.card-nps-wrap{
     break-inside:avoid;page-break-inside:avoid
   }
 
-  /* ── 차트 높이 제한 ── */
-  canvas{max-height:175px!important}
+  /* 차트: 높이 명시 (max-height만으로는 Chart.js 비율 유지 불가) */
+  .chart-box{max-height:170px!important}
+  canvas{max-height:155px!important;height:155px!important;width:100%!important}
 
-  /* ── 폰트 크기 조정 ── */
-  .sec-hdr h2{font-size:13px!important}
-  .card-nps-val{font-size:28px!important}
-  .sum-stat .big{font-size:20px!important}
-  .sum-stat .lbl,.sum-stat .sub{font-size:9px!important}
+  /* 폰트 크기 */
+  .sec-hdr h2{font-size:11pt!important}
+  .card-nps-val{font-size:26px!important}
+  .sum-stat .big{font-size:18px!important}
+  .sum-stat .lbl,.sum-stat .sub{font-size:8.5pt!important}
 }
 @media(max-width:1300px){
   .ch-cards{grid-template-columns:repeat(3,1fr)}
