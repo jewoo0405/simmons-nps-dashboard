@@ -277,13 +277,7 @@ input,select,button,textarea{font-family:'Pretendard','Malgun Gothic',sans-serif
 
   /* 콘텐츠(≈1380px) → 인쇄 영역(277mm≈1048px) 비율 맞춤 */
   html{zoom:.76}
-  body{
-    width:277mm!important;
-    max-width:277mm!important;
-    font-size:8.5pt!important;
-    background:#f0f3f8!important;
-    margin:0!important;padding:0!important
-  }
+  body{font-size:8.5pt!important;background:#f0f3f8!important;margin:0!important;padding:0!important}
 
   /* 불필요 요소 숨김 */
   .tab-nav,.btn,.tch-btns,#trendChBtns,#t6,
@@ -296,25 +290,38 @@ input,select,button,textarea{font-family:'Pretendard','Malgun Gothic',sans-serif
   /* 대시보드 */
   .dash{display:block!important;width:100%!important;max-width:100%!important;padding:0!important}
 
-  /* 탭 섹션: 전체 표시 + 페이지 단락 */
-  .tab-c{display:block!important;break-before:page;page-break-before:always}
-  .tab-c:first-child{break-before:auto;page-break-before:auto}
+  /* 탭 섹션: 현재 선택된 탭만 출력 */
+  .tab-c{display:none!important}
+  .tab-c.act{display:block!important;break-before:auto;page-break-before:auto}
 
   /* 그리드 레이아웃 고정 */
+  .sum-banner{grid-template-columns:repeat(6,1fr)!important;gap:0!important}
+  .sum-stat{padding:0 12px!important;border-bottom:none!important}
   .ch-cards{grid-template-columns:repeat(5,1fr)!important}
   .voc-grid{grid-template-columns:repeat(2,1fr)!important}
   .iss-grid{grid-template-columns:repeat(3,1fr)!important}
   #storeTypeGrid{grid-template-columns:repeat(5,1fr)!important}
 
-  /* 박스 내부 짤림 방지 */
-  .sum-banner,.chart-box,.voc-crd,.iss-card,
+  /* 섹션 헤더: 고아 방지 (헤더만 페이지 끝에 남는 것 방지) */
+  .sec-hdr{break-after:avoid!important;page-break-after:avoid!important}
+
+  /* 테이블 짤림 방지 */
+  .dt,.at{break-inside:avoid!important;page-break-inside:avoid!important}
+  .dt tr,.at tr{break-inside:avoid!important;page-break-inside:avoid!important}
+
+  /* 박스/그리드 내부 짤림 방지 */
+  .sum-banner,.ch-cards,.ch-chart-grid,
+  .chart-box,.voc-crd,.iss-card,
   #storeTypeGrid>div,.card-nps-wrap{
-    break-inside:avoid;page-break-inside:avoid
+    break-inside:avoid!important;page-break-inside:avoid!important
   }
 
-  /* 차트: 높이 명시 (max-height만으로는 Chart.js 비율 유지 불가) */
-  .chart-box{max-height:170px!important}
-  canvas{max-height:155px!important;height:155px!important;width:100%!important}
+  /* 매장 유형별 세부 현황: 섹션 헤더만 고아 방지, 불필요한 강제 개행은 제거 */
+  #storeTypeSec>div:first-child{break-after:avoid!important;page-break-after:avoid!important}
+
+  /* 차트: height 고정 금지 — Chart.js 내부 픽셀 버퍼 비율 깨짐 방지 */
+  .chart-box{max-height:200px!important;overflow:hidden!important}
+  canvas{max-height:185px!important;max-width:100%!important;width:auto!important}
 
   /* 폰트 크기 */
   .sec-hdr h2{font-size:11pt!important}
@@ -363,9 +370,80 @@ input,select,button,textarea{font-family:'Pretendard','Malgun Gothic',sans-serif
 .voc-toggle-btn.act-det{background:#1e2d4a;color:#fff;box-shadow:0 2px 8px rgba(30,45,74,.3)}
 .voc-toggle-btn.act-pas{background:#b8922e;color:#fff;box-shadow:0 2px 8px rgba(184,146,46,.3)}
 .voc-toggle-btn.act-pro{background:#3d9a72;color:#fff;box-shadow:0 2px 8px rgba(61,154,114,.3)}
+
+/* ══ 접속 비밀번호 게이트 ══ */
+html:not(.pw-ok) body>*:not(#pwGate){display:none!important}
+#pwGate{position:fixed;inset:0;z-index:99999;background:linear-gradient(135deg,#1e2d4a,#2d4a7a);
+  display:flex;align-items:center;justify-content:center}
+#pwGate.pw-hidden{display:none}
+.pw-box{background:#fff;border-radius:16px;padding:40px 36px;width:320px;max-width:90vw;
+  box-shadow:0 20px 60px rgba(0,0,0,.35);text-align:center}
+.pw-logo{font-size:20px;font-weight:900;letter-spacing:3px;color:#1e2d4a;margin-bottom:4px}
+.pw-sub{font-size:12px;color:#64748b;margin-bottom:22px}
+.pw-input{width:100%;padding:12px 14px;border:1.5px solid #d6dce6;border-radius:9px;font-size:14px;
+  margin-bottom:12px;outline:none;transition:.15s}
+.pw-input:focus{border-color:#4a6fa5}
+.pw-btn{width:100%;padding:12px;border:none;border-radius:9px;background:#4a6fa5;color:#fff;
+  font-size:14px;font-weight:700;cursor:pointer;transition:.15s}
+.pw-btn:hover{background:#0a2a4a}
+.pw-err{color:#c0504a;font-size:12px;margin-top:10px;min-height:14px}
 </style>
+<script>
+(function(){
+  try{
+    if(sessionStorage.getItem('nps_dash_auth')==='1'){
+      document.documentElement.classList.add('pw-ok');
+    }
+  }catch(e){}
+})();
+</script>
 </head>
 <body>
+
+<div id="pwGate">
+  <div class="pw-box">
+    <div class="pw-logo">SIMMONS</div>
+    <div class="pw-sub">NPS · VOC 대시보드 접속 비밀번호</div>
+    <input type="password" id="pwInput" class="pw-input" placeholder="비밀번호 입력" autocomplete="off">
+    <button class="pw-btn" id="pwSubmit">접속</button>
+    <div class="pw-err" id="pwErr"></div>
+  </div>
+</div>
+<script>
+(function(){
+  var HASH = '57248fe0606a8b66ede8d24f3780c36faf4809f2329a7615061e0cbd944f5fc0';
+  var gate = document.getElementById('pwGate');
+  var input = document.getElementById('pwInput');
+  var err = document.getElementById('pwErr');
+
+  async function sha256Hex(str){
+    var buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+    return Array.from(new Uint8Array(buf)).map(function(b){return b.toString(16).padStart(2,'0');}).join('');
+  }
+
+  async function tryUnlock(){
+    var val = input.value;
+    if(!val){ return; }
+    var hex = await sha256Hex(val);
+    if(hex === HASH){
+      try{ sessionStorage.setItem('nps_dash_auth','1'); }catch(e){}
+      document.documentElement.classList.add('pw-ok');
+      gate.classList.add('pw-hidden');
+    } else {
+      err.textContent = '비밀번호가 올바르지 않습니다.';
+      input.value='';
+      input.focus();
+    }
+  }
+
+  if(document.documentElement.classList.contains('pw-ok')){
+    gate.classList.add('pw-hidden');
+  }
+
+  document.getElementById('pwSubmit').addEventListener('click', tryUnlock);
+  input.addEventListener('keydown', function(e){ if(e.key==='Enter'){ tryUnlock(); } });
+})();
+</script>
 
 <!-- 헤더 -->
 <header class="hdr">
@@ -551,7 +629,7 @@ input,select,button,textarea{font-family:'Pretendard','Malgun Gothic',sans-serif
       <tbody id="chTbody"></tbody>
       <tfoot><tr class="tot" id="chTot"></tr></tfoot>
     </table></div>
-    <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:12px">
+    <div class="ch-chart-grid" style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:12px">
       <div class="chart-box"><div class="chart-title">채널별 추천자 / 비추천자 비율</div><canvas id="cBar"></canvas></div>
       <div class="chart-box"><div class="chart-title">이슈 카테고리 비중</div><canvas id="cDonut"></canvas></div>
     </div>
@@ -787,6 +865,8 @@ input,select,button,textarea{font-family:'Pretendard','Malgun Gothic',sans-serif
 <script>
 /* Chart.js 데이터레이블 플러그인 등록 */
 Chart.register(ChartDataLabels);
+/* 차트 캔버스를 항상 고해상도(2배)로 그려서, 인쇄/PDF 시 확대 출력돼도 깨지지 않게 함 */
+Chart.defaults.devicePixelRatio = Math.max(window.devicePixelRatio || 1, 2);
 
 /* ════════════════════════════════════════════
    ▶ Supabase 설정 (배포 전 아래 값들을 입력하세요)
@@ -797,8 +877,8 @@ Chart.register(ChartDataLabels);
    UPLOAD_PASSWORD   : 업로드/삭제 시 요구할 비밀번호
                        (영문+숫자 조합 권장)
 ════════════════════════════════════════════ */
-const SUPABASE_URL      = 'https://nakkxhadgpuhtlxotpmt.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_6BjYwR4OCi0GCTUG7aVX2Q_xfLf3bgS';
+const SUPABASE_URL      = 'https://yuxcpbkadrddvrhfnote.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_DMuv29OoTz8Z3z7x3i3EGA_aG-upT-O';
 const UPLOAD_PASSWORD   = 'simmons2026';  // ← 배포 전 반드시 변경
 
 let _supabase = null;
