@@ -4248,7 +4248,7 @@ async function renderSupabaseHistory(){
         const dtStr = `${dt.getFullYear()}.${String(dt.getMonth()+1).padStart(2,'0')}.${String(dt.getDate()).padStart(2,'0')} `
                     + `${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;
         const dot = _CH_DOT[f.channel]||'#94a3b8';
-        const chQ = JSON.stringify(f.channel);
+        const chQ = JSON.stringify(f.channel).replace(/"/g, '&quot;');
         return `<tr style="border-bottom:1px solid #f1f5f9" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background=''">
           <td style="padding:8px 10px"><div style="display:flex;align-items:center;gap:5px">
             <span style="width:8px;height:8px;border-radius:50%;background:${dot};flex-shrink:0;display:inline-block"></span>
