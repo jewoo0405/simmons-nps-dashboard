@@ -1161,7 +1161,7 @@ function classifyVOCMultiPass(t){
   return {cat, confidence, note};
 }
 function isDetractor(s){ return s>=0&&s<=6; }
-function isPassive(s)  { return s===7||s===8; }
+function isPassive(s)  { return s>6&&s<9; }
 function isPromoter(s) { return s>=9&&s<=10; }
 function isNegVOC(t){
   if(!t||!t.trim()) return false;
@@ -3211,7 +3211,7 @@ function getRawFiltered(){
   const neg = document.getElementById('rawNegFilter')?.value  || '';
   const cat = document.getElementById('rawCatFilter')?.value  || '';
   const q   = (document.getElementById('rawSearch')?.value   || '').trim().toLowerCase();
-  return _allRecs.filter(r => {
+  return getFiltered().filter(r => {
     if(ch  && r.channel !== ch) return false;
     if(tp==='추천'   && !isPromoter(r.score))   return false;
     if(tp==='중립'   && !isPassive(r.score))    return false;
@@ -3504,6 +3504,9 @@ function applyVerify(){
 
 /* ── 수정 모드 토글 ── */
 function toggleEditMode(){
+  if(_editMode && (Object.keys(_pendingCats).length || Object.keys(_pendingNegs).length)){
+    if(!confirm('저장하지 않은 변경사항이 있습니다. 수정을 취소하시겠습니까?')) return;
+  }
   _editMode = !_editMode;
   _pendingCats = {};  // 취소 시 임시 변경 초기화
   _pendingNegs = {};
@@ -3666,6 +3669,8 @@ function reclassifyAll(){
     r._classNote    = note;
     r.isNegVOC = isDetractor(r.score) && cat !== '칭찬' ? isNegVOC(r.voc) : false;
   });
+  _pendingCats = {};
+  _pendingNegs = {};
   renderAll(analyze(getFiltered()));
   renderRawTable();
   alert(`✅ ${_allRecs.length}건 재분류 완료`);
@@ -3961,7 +3966,7 @@ async function renderFileHistory(){
               </div>
             </td>
             <td style="padding:8px 10px;text-align:center;font-weight:700;color:#0f3460">${f.year}년 ${f.month}월</td>
-            <td style="padding:8px 10px;color:#6b7280;max-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${f.fileName}">${f.fileName}</td>
+            <td style="padding:8px 10px;color:#6b7280;max-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${String(f.fileName||'').replace(/"/g,'&quot;')}">${f.fileName}</td>
             <td style="padding:8px 10px;text-align:center;color:#374151">${f.recordCount.toLocaleString()}건</td>
             <td style="padding:8px 10px;text-align:center;color:#94a3b8;font-size:11px">${dtStr}</td>
             <td style="padding:8px 10px;text-align:center;white-space:nowrap">
@@ -4254,7 +4259,7 @@ async function renderSupabaseHistory(){
             <span style="width:8px;height:8px;border-radius:50%;background:${dot};flex-shrink:0;display:inline-block"></span>
             <span style="font-weight:700">${f.channel}</span></div></td>
           <td style="padding:8px 10px;text-align:center;font-weight:700;color:#0f3460">${f.year}년 ${f.month}월</td>
-          <td style="padding:8px 10px;color:#6b7280;max-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${f.file_name||''}">${f.file_name||'—'}</td>
+          <td style="padding:8px 10px;color:#6b7280;max-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${String(f.file_name||'').replace(/"/g,'&quot;')}">${f.file_name||'—'}</td>
           <td style="padding:8px 10px;text-align:center;color:#374151">${(f.record_count||0).toLocaleString()}건</td>
           <td style="padding:8px 10px;text-align:center;color:#94a3b8;font-size:11px">${dtStr}</td>
           <td style="padding:8px 10px;text-align:center">
