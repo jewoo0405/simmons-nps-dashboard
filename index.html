@@ -404,17 +404,17 @@ html:not(.pw-ok) body>*:not(#pwGate){display:none!important}
   <div class="pw-box">
     <div class="pw-logo">SIMMONS</div>
     <div class="pw-sub">NPS · VOC 대시보드 접속 비밀번호</div>
-    <input type="password" id="pwInput" class="pw-input" placeholder="비밀번호 입력" autocomplete="off">
-    <button class="pw-btn" id="pwSubmit">접속</button>
-    <div class="pw-err" id="pwErr"></div>
+    <input type="password" id="gateInput" class="pw-input" placeholder="비밀번호 입력" autocomplete="off">
+    <button class="pw-btn" id="gateSubmit">접속</button>
+    <div class="pw-err" id="gateErr"></div>
   </div>
 </div>
 <script>
 (function(){
   var HASH = '57248fe0606a8b66ede8d24f3780c36faf4809f2329a7615061e0cbd944f5fc0';
   var gate = document.getElementById('pwGate');
-  var input = document.getElementById('pwInput');
-  var err = document.getElementById('pwErr');
+  var input = document.getElementById('gateInput');
+  var err = document.getElementById('gateErr');
 
   async function sha256Hex(str){
     var buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
@@ -440,7 +440,7 @@ html:not(.pw-ok) body>*:not(#pwGate){display:none!important}
     gate.classList.add('pw-hidden');
   }
 
-  document.getElementById('pwSubmit').addEventListener('click', tryUnlock);
+  document.getElementById('gateSubmit').addEventListener('click', tryUnlock);
   input.addEventListener('keydown', function(e){ if(e.key==='Enter'){ tryUnlock(); } });
 })();
 </script>
