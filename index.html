@@ -2780,6 +2780,7 @@ function switchTab(id,btn){
   document.getElementById(id).classList.add('act'); btn.classList.add('act');
   if(id==='t6') renderRawTable();
   if(id==='t4') renderT4Action();
+  if(id==='t5' && _lastD) try{ renderTrendSection(_lastD); }catch(e){ console.error(e); }
 }
 
 /* ── 4번 탭: 월별 개선 Action 관리 ── */
@@ -2997,6 +2998,7 @@ function exportT4PDF(){
 
   const today = new Date().toLocaleDateString('ko-KR');
   const win = window.open('','_blank','width=900,height=700');
+  if(!win){ alert('팝업이 차단되어 PDF 창을 열 수 없습니다. 브라우저의 팝업 차단을 허용해주세요.'); return; }
   win.document.write(`<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
   <title>SIMMONS 개선 Action 관리</title>
   <style>
@@ -3764,6 +3766,7 @@ function downloadRawPDF(){
   const tp   = document.getElementById('rawTypeFilter')?.value  || '전체';
   const cat  = document.getElementById('rawCatFilter')?.value   || '전체';
   const win  = window.open('','_blank');
+  if(!win){ alert('팝업이 차단되어 PDF 창을 열 수 없습니다. 브라우저의 팝업 차단을 허용해주세요.'); return; }
   win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
   <title>시몬스 NPS Raw 데이터</title>
   <style>
