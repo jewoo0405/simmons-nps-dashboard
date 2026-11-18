@@ -1434,10 +1434,17 @@ function startAnalysis(){
     // 비밀번호 먼저 → VOC 분류 검증 모달 → 저장 및 렌더
     showPwModal(() => {
       showVerifyModal(newUploads, async () => {
+        let toMerge = newUploads;
         if(_supabase){
-          await _saveUploadsToSupabase(newUploads);
+          const failedKeys = await _saveUploadsToSupabase(newUploads);
+          if(failedKeys.size){
+            // 저장에 실패한 채널+년+월 데이터는 화면에도 반영하지 않는다.
+            // (성공한 것처럼 보였다가 새로고침하면 사라지는 것을 방지)
+            toMerge = newUploads.filter(r => !failedKeys.has(`${r.channel}|${r.year}|${r.month}`));
+            alert('⚠️ 일부 데이터는 저장에 실패하여 화면에 표시되지 않습니다. 네트워크 상태를 확인한 뒤 해당 채널/월을 다시 업로드해 주세요.');
+          }
         }
-        _mergeAndRender(newUploads);
+        _mergeAndRender(toMerge);
       });
     });
   } else {
@@ -1456,9 +1463,12 @@ async function _saveUploadsToSupabase(newUploads){
     const up = _uploads[ch];
     if(up.recs.length){ const k=`${ch}|${up.year}|${up.month}`; if(groups[k]) groups[k].fileName=up.fileName; }
   });
-  for(const g of Object.values(groups)){
-    await saveToSupabase(g.recs, g.channel, g.year, g.month, g.fileName, g.recs.length);
+  const failedKeys = new Set();
+  for(const [k, g] of Object.entries(groups)){
+    const ok = await saveToSupabase(g.recs, g.channel, g.year, g.month, g.fileName, g.recs.length);
+    if(!ok) failedKeys.add(k);
   }
+  return failedKeys;
 }
 
 function _mergeAndRender(newUploads){
@@ -4141,32 +4151,53 @@ async function loadSupabaseData(){
 }
 
 async function saveToSupabase(recs, channel, year, month, fileName, recordCount){
-  if(!_supabase) return;
+  if(!_supabase) return true;
+  const rows = recs.map(r => ({
+    year:r.year, month:r.month, channel:r.channel, store_type:r.storeType||null,
+    score:r.score, praised:['y','예','칭찬','yes','true','1'].includes(String(r.praised||'').toLowerCase()), voc:r.voc||null,
+    issue_category:r.issueCategory, is_neg_voc:r.isNegVOC
+  }));
+  const CHUNK = 500;
+  const insertedIds = [];
   try{
-    // 같은 채널+년+월 기존 레코드 삭제 후 Insert
-    await _supabase.from('nps_records').delete()
-      .eq('channel', channel).eq('year', year).eq('month', month);
-    const rows = recs.map(r => ({
-      year:r.year, month:r.month, channel:r.channel, store_type:r.storeType||null,
-      score:r.score, praised:['y','예','칭찬','yes','true','1'].includes(String(r.praised||'').toLowerCase()), voc:r.voc||null,
-      issue_category:r.issueCategory, is_neg_voc:r.isNegVOC
-    }));
-    const CHUNK = 500;
+    // 1) 새 데이터를 먼저 전부 삽입한다 (기존 데이터는 아직 그대로 유지됨)
     for(let i=0; i<rows.length; i+=CHUNK){
-      const {error} = await _supabase.from('nps_records').insert(rows.slice(i, i+CHUNK));
+      const {data, error} = await _supabase.from('nps_records')
+        .insert(rows.slice(i, i+CHUNK)).select('id');
       if(error) throw error;
+      (data||[]).forEach(d => insertedIds.push(d.id));
     }
-    const {error: delLogErr} = await _supabase.from('upload_log').delete()
-      .eq('channel',channel).eq('year',year).eq('month',month);
-    if(delLogErr) console.error('[Supabase] upload_log 삭제 실패:', delLogErr);
-    const {error: insLogErr} = await _supabase.from('upload_log').insert(
-      {channel, year, month, file_name:fileName, record_count:recordCount}
-    );
-    if(insLogErr) console.error('[Supabase] upload_log 저장 실패:', insLogErr);
+    // 2) 새 데이터 삽입이 "전부" 성공한 뒤에만 같은 채널+년+월의 기존 데이터를 삭제한다.
+    //    방금 넣은 새 행은 id로 제외하여 절대 함께 지우지 않는다.
+    if(insertedIds.length){
+      const {error: delErr} = await _supabase.from('nps_records').delete()
+        .eq('channel', channel).eq('year', year).eq('month', month)
+        .not('id', 'in', `(${insertedIds.join(',')})`);
+      if(delErr) throw delErr;
+    }
+    // 3) 업로드 로그도 같은 순서(새 로그 먼저 삽입 → 기존 로그 삭제)로 교체한다.
+    const {data: logData, error: insLogErr} = await _supabase.from('upload_log')
+      .insert({channel, year, month, file_name:fileName, record_count:recordCount})
+      .select('id');
+    if(insLogErr) throw insLogErr;
+    const newLogId = logData && logData[0] && logData[0].id;
+    if(newLogId != null){
+      const {error: delLogErr} = await _supabase.from('upload_log').delete()
+        .eq('channel',channel).eq('year',year).eq('month',month)
+        .neq('id', newLogId);
+      if(delLogErr) console.error('[Supabase] 이전 upload_log 정리 실패(새 로그는 저장됨, 무시 가능):', delLogErr);
+    }
     renderSupabaseHistory();
+    return true;
   } catch(ex){
     console.error('[Supabase] 저장 실패:', ex);
-    alert('Supabase 저장 실패: ' + ex.message);
+    // 이번 시도에서 넣은 새 데이터만 롤백 — 기존 데이터는 그대로 보존된다.
+    if(insertedIds.length){
+      const {error: rbErr} = await _supabase.from('nps_records').delete().in('id', insertedIds);
+      if(rbErr) console.error('[Supabase] 롤백 실패 (중복 데이터가 남아있을 수 있음):', rbErr);
+    }
+    alert(`❌ Supabase 저장 실패 — "${channel} ${year}년 ${month}월" 데이터는 저장되지 않았습니다. (기존 데이터는 보존됨)\n` + ex.message);
+    return false;
   }
 }
 
