@@ -387,6 +387,41 @@ html:not(.pw-ok) body>*:not(#pwGate){display:none!important}
   font-size:14px;font-weight:700;cursor:pointer;transition:.15s}
 .pw-btn:hover{background:#0a2a4a}
 .pw-err{color:#c0504a;font-size:12px;margin-top:10px;min-height:14px}
+
+/* ══ ⑦ 불만 소명 · 케어 탭 ══ */
+.t7-note{background:#fff7ed;border:1.5px solid #fb923c;border-radius:10px;padding:10px 14px;font-size:12px;color:#9a3412;font-weight:700;margin-bottom:14px}
+.t7-kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:14px}
+.t7-kpi{background:#fff;border-radius:12px;padding:13px 14px;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.t7-kpi .lbl{font-size:11px;color:#94a3b8;font-weight:700}
+.t7-kpi .val{font-size:22px;font-weight:900;color:var(--dark);margin-top:2px}
+.t7-kpi .sub{font-size:10.5px;color:#94a3b8;margin-top:2px}
+.t7-kpi .sub.up{color:var(--det)}
+.t7-grid3{display:grid;grid-template-columns:1.1fr 1fr 1fr;gap:12px;margin-bottom:14px}
+.t7-card{background:#fff;border-radius:12px;padding:16px;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.t7-card h3{font-size:13px;font-weight:700;color:#374151;margin-bottom:10px}
+.t7-card h3 small{color:#94a3b8;font-weight:500;font-size:11px;margin-left:6px}
+.t7-bar-row{display:grid;grid-template-columns:62px 1fr 68px;align-items:center;gap:8px;font-size:12.5px;margin-bottom:16px}
+.t7-bar-track{height:16px;border-radius:7px;background:#f1f5f9;overflow:hidden}
+.t7-bar-fill{display:block;height:100%;border-radius:5px}
+.t7-donut-wrap{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.t7-donut{width:150px;height:150px;border-radius:50%;position:relative;flex-shrink:0}
+.t7-donut::after{content:'';position:absolute;inset:20px;border-radius:50%;background:#fff}
+.t7-donut .ctr{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.t7-donut .ctr b{font-size:22px;color:var(--dark)}
+.t7-donut .ctr span{font-size:11px;color:#94a3b8}
+.t7-legend{font-size:12.5px;display:flex;flex-direction:column;gap:10px;color:#374151}
+.t7-legend .dot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:6px}
+.t7-filter{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+.t7-chip{padding:6px 12px;border-radius:20px;font-size:12px;cursor:pointer;border:1.5px solid #d1d9e6;background:#fff;color:#64748b;font-weight:700;transition:.15s;font-family:inherit}
+.t7-chip.act{background:var(--dark);color:#fff;border-color:var(--dark)}
+.t7-badge{display:inline-flex;padding:3px 9px;border-radius:6px;font-size:11px;font-weight:700}
+.t7-pill{display:inline-flex;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700}
+.t7-score-mild{background:#eef2f6;color:#64748b}
+.t7-field{margin-bottom:12px}
+.t7-field .k{font-size:10.5px;font-weight:700;color:#94a3b8;letter-spacing:.04em;text-transform:uppercase;margin-bottom:4px}
+.t7-field .v{font-size:12.5px;line-height:1.6;white-space:pre-wrap;background:#f8fafc;border-radius:8px;padding:9px 11px;color:#374151}
+.t7-row{cursor:pointer}
+@media(max-width:1300px){.t7-kpi-row{grid-template-columns:repeat(3,1fr)}.t7-grid3{grid-template-columns:1fr}}
 </style>
 <script>
 (function(){
@@ -609,11 +644,12 @@ html:not(.pw-ok) body>*:not(#pwGate){display:none!important}
   <!-- 탭 -->
   <div class="tab-nav">
     <button class="tab-btn act" onclick="switchTab('t1',this)">① 채널별 현황</button>
-    <button class="tab-btn" onclick="switchTab('t2',this)">② VOC</button>
-    <button class="tab-btn" onclick="switchTab('t3',this)">③ 전사 핵심 Issue</button>
-    <button class="tab-btn" onclick="switchTab('t4',this)">④ 개선 Action</button>
-    <button class="tab-btn" onclick="switchTab('t5',this)">⑤ 월별 트렌드</button>
-    <button class="tab-btn" onclick="switchTab('t6',this)">⑥ 고객 Raw 데이터</button>
+    <button class="tab-btn" onclick="switchTab('t5',this)">② 월별 트렌드</button>
+    <button class="tab-btn" onclick="switchTab('t2',this)">③ VOC</button>
+    <button class="tab-btn" onclick="switchTab('t3',this)">④ 전사 핵심 Issue</button>
+    <button class="tab-btn" onclick="switchTab('t7',this)">⑤ 불만 케어</button>
+    <button class="tab-btn" onclick="switchTab('t4',this)">⑥ 개선 Action</button>
+    <button class="tab-btn" onclick="switchTab('t6',this)">⑦ 고객 Raw 데이터</button>
   </div>
 
   <div class="tab-c act" id="t1">
@@ -646,7 +682,7 @@ html:not(.pw-ok) body>*:not(#pwGate){display:none!important}
   </div>
 
   <div class="tab-c" id="t2">
-    <div class="sec-hdr"><div class="sec-num">2</div><h2 id="vocSecTitle">채널별 VOC 상세 분석</h2><span class="sim-tag">SIMMONS</span></div>
+    <div class="sec-hdr"><div class="sec-num">3</div><h2 id="vocSecTitle">채널별 VOC 상세 분석</h2><span class="sim-tag">SIMMONS</span></div>
     <div class="voc-toggle">
       <button class="voc-toggle-btn act-det" id="vocBtnDet" onclick="switchVocType('det',this)">비추천 VOC</button>
       <button class="voc-toggle-btn" id="vocBtnPas" onclick="switchVocType('pas',this)">중립 VOC</button>
@@ -656,7 +692,7 @@ html:not(.pw-ok) body>*:not(#pwGate){display:none!important}
   </div>
 
   <div class="tab-c" id="t3">
-    <div class="sec-hdr"><div class="sec-num">3</div><h2>전사 반복 VOC 핵심 Issue</h2><span class="sim-tag">SIMMONS</span></div>
+    <div class="sec-hdr"><div class="sec-num">4</div><h2>전사 반복 VOC 핵심 Issue</h2><span class="sim-tag">SIMMONS</span></div>
     <div style="background:#fff7ed;border:1.5px solid #fb923c;border-radius:10px;padding:10px 14px;font-size:12px;color:#9a3412;font-weight:700;margin-bottom:12px" id="top3msg"></div>
     <div class="iss-grid" id="issGrid"></div>
 
@@ -681,22 +717,12 @@ html:not(.pw-ok) body>*:not(#pwGate){display:none!important}
       <div id="issHeatmap"></div>
     </div>
 
-    <!-- 기타 분류 VOC 빠른 검토 패널 -->
-    <div style="margin-top:28px" id="etcVocSec">
-      <div style="display:flex;align-items:center;gap:8px;padding-bottom:10px;border-bottom:2px solid #1a1a2e;margin-bottom:10px">
-        <div style="width:22px;height:22px;border-radius:50%;background:#f59e0b;color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0">⚠</div>
-        <h2 style="font-size:14px;font-weight:700;color:#1a1a2e">기타 분류 VOC 빠른 검토</h2>
-        <span style="font-size:11px;color:#64748b;margin-left:auto;font-weight:700;letter-spacing:1px">SIMMONS</span>
-      </div>
-      <div style="font-size:11px;color:#64748b;margin-bottom:12px">키워드가 매칭되지 않아 '기타'로 분류된 VOC입니다. 반복 표현이 보이면 VOC_KW 추가 또는 RAW 탭에서 수기 재분류를 검토하세요.</div>
-      <div id="etcVocPanel"></div>
-    </div>
   </div>
 
   <div class="tab-c" id="t4">
     <!-- 헤더 -->
     <div class="sec-hdr" style="display:flex;align-items:center;gap:8px">
-      <div class="sec-num">4</div>
+      <div class="sec-num">6</div>
       <h2 style="flex:1">개선 Action 관리</h2>
       <div id="t4Summary" style="display:flex;gap:8px;font-size:11px;font-weight:700"></div>
       <span class="sim-tag">SIMMONS</span>
@@ -733,7 +759,7 @@ html:not(.pw-ok) body>*:not(#pwGate){display:none!important}
   </div>
 
   <div class="tab-c" id="t5">
-    <div class="sec-hdr"><div class="sec-num">5</div><h2>채널별 NPS 월별 트렌드</h2><span class="sim-tag">SIMMONS</span></div>
+    <div class="sec-hdr"><div class="sec-num">2</div><h2>채널별 NPS 월별 트렌드</h2><span class="sim-tag">SIMMONS</span></div>
     <div id="trendChBtns" class="tch-btns"></div>
     <div class="chart-box"><canvas id="cTrend" style="max-height:340px"></canvas></div>
     <div class="chart-box" style="margin-top:20px">
@@ -751,9 +777,9 @@ html:not(.pw-ok) body>*:not(#pwGate){display:none!important}
     <div id="trendTableWrap" style="margin-top:28px;overflow-x:auto"></div>
   </div>
 
-  <!-- ⑥ 고객 Raw 데이터 -->
+  <!-- ⑦ 고객 Raw 데이터 -->
   <div class="tab-c" id="t6">
-    <div class="sec-hdr"><div class="sec-num">6</div><h2>고객 Raw 데이터</h2><span class="sim-tag">SIMMONS</span></div>
+    <div class="sec-hdr"><div class="sec-num">7</div><h2>고객 Raw 데이터</h2><span class="sim-tag">SIMMONS</span></div>
 
     <!-- 필터 & 다운로드 바 -->
     <div style="background:#fff;border-radius:12px;padding:12px 16px;box-shadow:0 1px 4px rgba(0,0,0,.08);display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px">
@@ -805,6 +831,127 @@ html:not(.pw-ok) body>*:not(#pwGate){display:none!important}
     </div>
 
     <div id="rawTableWrap"></div>
+
+    <!-- 기타 분류 VOC 빠른 검토 패널 -->
+    <div style="margin-top:28px" id="etcVocSec">
+      <div style="display:flex;align-items:center;gap:8px;padding-bottom:10px;border-bottom:2px solid #1a1a2e;margin-bottom:10px">
+        <div style="width:22px;height:22px;border-radius:50%;background:#f59e0b;color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0">⚠</div>
+        <h2 style="font-size:14px;font-weight:700;color:#1a1a2e">기타 분류 VOC 빠른 검토</h2>
+        <span style="font-size:11px;color:#64748b;margin-left:auto;font-weight:700;letter-spacing:1px">SIMMONS</span>
+      </div>
+      <div style="font-size:11px;color:#64748b;margin-bottom:12px">키워드가 매칭되지 않아 '기타'로 분류된 VOC입니다. 반복 표현이 보이면 VOC_KW 추가 또는 바로 위 RAW 데이터에서 수기 재분류를 검토하세요.</div>
+      <div id="etcVocPanel"></div>
+    </div>
+  </div>
+
+  <!-- ⑤ 불만 소명 · 케어 현황 -->
+  <div class="tab-c" id="t7">
+    <div class="sec-hdr"><div class="sec-num">5</div><h2>불만 소명 · 케어 현황</h2><span class="sim-tag">SIMMONS</span></div>
+    <div class="t7-note" id="t7Note">① 채널별 현황/⑦ 고객 Raw 데이터와 같은 업로드 데이터를 공유합니다 — 상단에서 올린 파일 중 NPS 0~6점(비추천) 건이 자동으로 여기 나타납니다. 별도 업로드는 필요 없습니다.</div>
+
+    <div class="t7-kpi-row">
+      <div class="t7-kpi"><div class="lbl">총 비추천 건수</div><div class="val" id="t7KpiTotal">—</div><div class="sub">선택된 기간 누적 · NPS 0~6점</div></div>
+      <div class="t7-kpi"><div class="lbl">귀책 확인 (O)</div><div class="val" id="t7KpiFault">—</div><div class="sub up" id="t7KpiFaultPct">—</div></div>
+      <div class="t7-kpi"><div class="lbl">케어 완료</div><div class="val" id="t7KpiDone">—</div><div class="sub" id="t7KpiDoneSub">—</div></div>
+      <div class="t7-kpi"><div class="lbl">케어 미완료</div><div class="val" id="t7KpiPending">—</div><div class="sub up" id="t7KpiPendingSub">—</div></div>
+      <div class="t7-kpi"><div class="lbl">기프티콘/쿠폰 지급</div><div class="val" id="t7KpiCoupon">—</div><div class="sub">발송 대상 건</div></div>
+    </div>
+
+    <div class="t7-grid3">
+      <div class="t7-card" style="display:flex;flex-direction:column">
+        <h3>채널별 접수 현황 <small>매장 · 일반배송 · 블랙배송 · 상담 · AS</small></h3>
+        <div style="flex:1;display:flex;flex-direction:column;justify-content:center;margin-top:10px">
+          <div id="t7BarsType"></div>
+        </div>
+      </div>
+      <div class="t7-card" style="display:flex;flex-direction:column">
+        <h3>추천 점수 분포 <small>0~6점, NPS 비추천 그룹</small></h3>
+        <div style="flex:1;display:flex;flex-direction:column;justify-content:center;margin-top:10px">
+          <div id="t7BarsScore"></div>
+        </div>
+      </div>
+      <div class="t7-card" style="display:flex;flex-direction:column">
+        <h3>귀책 비율 <small>당사 귀책 확인 건 / 전체</small></h3>
+        <div style="flex:1;display:flex;flex-direction:column;justify-content:center;margin-top:10px">
+          <div class="t7-donut-wrap">
+            <div class="t7-donut" id="t7Donut" style="background:conic-gradient(var(--det) 0% 0%, #f1f5f9 0% 100%)">
+              <div class="ctr"><b id="t7DonutPct">0%</b><span>귀책 O</span></div>
+            </div>
+            <div class="t7-legend">
+              <div><span class="dot" style="background:var(--det)"></span>귀책 O (당사 책임)</div>
+              <div><span class="dot" style="background:#f1f5f9;border:1px solid #e2e8f0"></span>귀책 X (고객과실/오분류)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="t7-card">
+      <h3 style="margin-bottom:12px">접수 목록</h3>
+      <div class="t7-filter">
+        <div id="t7TypeChips">
+          <span class="t7-chip act" data-type="all" onclick="t7SetFilter('type','all',this)">전체</span>
+          <span class="t7-chip" data-type="매장" onclick="t7SetFilter('type','매장',this)">매장</span>
+          <span class="t7-chip" data-type="일반배송" onclick="t7SetFilter('type','일반배송',this)">일반배송</span>
+          <span class="t7-chip" data-type="블랙배송" onclick="t7SetFilter('type','블랙배송',this)">블랙배송</span>
+          <span class="t7-chip" data-type="상담" onclick="t7SetFilter('type','상담',this)">상담</span>
+          <span class="t7-chip" data-type="AS" onclick="t7SetFilter('type','AS',this)">AS</span>
+        </div>
+        <select class="raw-sel" onchange="t7SetFilter('scoreBand',this.value)">
+          <option value="all">점수 전체</option>
+          <option value="low">0~2점 (심각)</option>
+          <option value="mid">3~4점 (보통)</option>
+          <option value="high">5~6점 (경미)</option>
+        </select>
+        <select class="raw-sel" onchange="t7SetFilter('voc',this.value)">
+          <option value="all">VOC 전체 표시</option>
+          <option value="has">VOC 있는 것만</option>
+        </select>
+        <select class="raw-sel" onchange="t7SetFilter('cat',this.value)">
+          <option value="all">유형 전체</option>
+          <option>칭찬</option><option>정책/가격</option><option>제품/감성</option><option>매장경험/응대</option>
+          <option>상담</option><option>AS</option><option>배송</option><option>기타</option>
+        </select>
+        <select class="raw-sel" onchange="t7SetFilter('fault',this.value)">
+          <option value="all">귀책 전체</option>
+          <option value="O">귀책 O</option>
+          <option value="X">귀책 X</option>
+        </select>
+        <select class="raw-sel" onchange="t7SetFilter('call',this.value)">
+          <option value="all">통화상태 전체</option>
+          <option value="완료">통화 완료</option>
+          <option value="대기">통화 대기</option>
+          <option value="부재/거부">부재·거부</option>
+        </select>
+        <select class="raw-sel" onchange="t7SetFilter('careStatus',this.value)">
+          <option value="all">케어상태 전체</option>
+          <option value="미확인">미확인</option>
+          <option value="진행중">진행중</option>
+          <option value="완료(미착수)">완료(미착수)</option>
+          <option value="완료(착수)">완료(착수)</option>
+        </select>
+        <input class="raw-sel" style="width:200px" type="text" placeholder="🔍 VOC 내용/접수번호 검색..." oninput="t7SetFilter('q',this.value)">
+        <span id="t7RowCount" style="font-size:11.5px;color:#94a3b8;margin-left:auto"></span>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="dt">
+          <thead id="t7Thead"></thead>
+          <tbody id="t7Tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div style="text-align:center;font-size:11px;color:#94a3b8;margin-top:10px">
+      고객명·연락처는 표시하지 않습니다 · 식별은 접수번호/판매번호로만 처리 · 직원명은 사내 처리담당 기록용입니다
+    </div>
+  </div>
+</div>
+
+<!-- ⑤ 불만 케어 상세 모달 -->
+<div class="modal-ov" id="t7Modal">
+  <div class="vfy-box" style="width:560px;position:relative">
+    <button onclick="t7CloseDetail()" style="position:absolute;top:18px;right:20px;border:none;background:none;font-size:18px;color:#94a3b8;cursor:pointer">✕</button>
+    <div id="t7ModalBody"></div>
   </div>
 </div>
 
@@ -1226,6 +1373,9 @@ const SCORE_ALIASES = ['점수','nps','nps점수','만족도점수','score','추
 const VOC_ALIASES   = ['voc','voc내용','고객의견','의견','내용','불만','코멘트','comment','상세내용'];
 const STORE_ALIASES = ['매장유형','매장구분','채널','store','점포','매장타입'];
 const SNAME_ALIASES = ['매장','매장명','점명','store_name','지점'];
+const DATE_ALIASES  = ['완료일','완료날짜','날짜','등록일','접수일','응답일','작성일','상담일','처리일','수집일','조사일','date','설문일','설문실시일','접수일자'];
+const CASE_ALIASES  = ['접수번호','판매번호','판매문서'];
+const STAFF_ALIASES = ['직원명','담당자','as기사명','영업사원명','접수자명','메인'];
 const STALIAS = {
   '직영갤러리':['직영갤러리','갤러리'],
   '맨션':      ['맨션'],
@@ -1253,20 +1403,79 @@ function normSt(v){
   return String(v).trim()||null;
 }
 
-function parseXL(wb, channel, year, month){
+// 셀 값(엑셀 날짜 시리얼 숫자 또는 문자열)에서 {year, month} 추출
+function extractYM(v){
+  if(v===null || v===undefined || v==='') return null;
+  if(typeof v === 'number' && v>0){
+    try{
+      const d = XLSX.SSF.parse_date_code(v);
+      if(d && d.y && d.m) return {y:d.y, m:d.m};
+    }catch(e){}
+    return null;
+  }
+  const s = String(v).trim();
+  let m = s.match(/(\d{4})[.\-\/년]\s*(\d{1,2})/);
+  if(m) return {y:+m[1], m:+m[2]};
+  m = s.match(/(\d{2})[.\-\/년]\s*(\d{1,2})/);
+  if(m) return {y:2000+(+m[1]), m:+m[2]};
+  return null;
+}
+
+// 엑셀 파일 내 날짜 컬럼을 찾아 연/월별 건수 분포를 집계
+// (파일에 여러 달 데이터가 섞여 있어도 "선택한 월이 차지하는 비율"을 판단할 수 있도록
+//  특정 월이 과반을 넘는지가 아니라 연/월별 카운트 전체를 돌려준다)
+function detectFileYM(wb){
   const sh = wb.Sheets[wb.SheetNames[0]];
+  const rows = XLSX.utils.sheet_to_json(sh, {header:1, defval:''});
+  if(rows.length < 2) return null;
+  const hdrs = rows[0].map(h => String(h||''));
+  let iDate=-1;
+  hdrs.forEach((h,i) => { if(iDate<0 && matchAlias(h, DATE_ALIASES)) iDate=i; });
+  if(iDate<0) return null;
+
+  const counts = {};
+  for(let i=1; i<rows.length; i++){
+    const ym = extractYM(rows[i][iDate]);
+    if(!ym) continue;
+    const k = `${ym.y}-${ym.m}`;
+    counts[k] = (counts[k]||0)+1;
+  }
+  const keys = Object.keys(counts);
+  if(!keys.length) return null;
+  keys.sort((a,b) => counts[b]-counts[a]);
+  const total = keys.reduce((s,k) => s+counts[k], 0);
+  const [topY, topM] = keys[0].split('-').map(Number);
+  return {counts, total, topYear:topY, topMonth:topM, topShare: counts[keys[0]]/total};
+}
+
+function parseXL(wb, channel, year, month){
+  // 여러 시트가 있는 파일(매장/상담 원본 등)은 첫 시트가 집계용 피벗표인 경우가 있어,
+  // "답변(점수) 컬럼이 정확히 1개인" 첫 시트를 우선 찾는다 — 못 찾으면 기존처럼 첫 시트로 fallback.
+  let sh = null;
+  for(const name of wb.SheetNames){
+    const candidate = wb.Sheets[name];
+    const testRows = XLSX.utils.sheet_to_json(candidate, {header:1, defval:''});
+    if(testRows.length < 2) continue;
+    const testHdrs = testRows[0].map(h => String(h||''));
+    const scoreColCount = testHdrs.filter(h => matchAlias(h, SCORE_ALIASES)).length;
+    if(scoreColCount === 1){ sh = candidate; break; }
+  }
+  if(!sh) sh = wb.Sheets[wb.SheetNames[0]];
   const rows = XLSX.utils.sheet_to_json(sh, {header:1, defval:''});
   if(rows.length < 2) throw new Error('데이터가 부족합니다.');
 
   const hdrs = rows[0].map(h => String(h||''));
   // 컬럼 인덱스 탐지
-  let iScore=-1, iVoc=-1, iStore=-1, iSname=-1, iPraised=-1;
+  let iScore=-1, iVoc=-1, iStore=-1, iSname=-1, iPraised=-1, iCase=-1, iSdate=-1, iStaff=-1;
   hdrs.forEach((h,i) => {
     if(iScore<0   && matchAlias(h, SCORE_ALIASES)) iScore=i;
     if(iVoc<0     && matchAlias(h, VOC_ALIASES))   iVoc=i;
     if(iStore<0   && matchAlias(h, STORE_ALIASES)) iStore=i;
     if(iSname<0   && matchAlias(h, SNAME_ALIASES)) iSname=i;
     if(iPraised<0 && matchAlias(h, ['칭찬','칭찬여부','praise','추천/비추천','추천비추천'])) iPraised=i;
+    if(iCase<0    && matchAlias(h, CASE_ALIASES))  iCase=i;
+    if(iSdate<0   && matchAlias(h, DATE_ALIASES))  iSdate=i;
+    if(iStaff<0   && matchAlias(h, STAFF_ALIASES)) iStaff=i;
   });
 
   // score 컬럼 fallback: 0~10 숫자 가장 많은 컬럼
@@ -1310,7 +1519,14 @@ function parseXL(wb, channel, year, month){
     }
     const neg     = isDetractor(sc) && cat !== '칭찬' ? isNegVOC(voc) : false;
 
-    recs.push({year, month, channel, storeType:st, score:sc, praised, voc, issueCategory:cat, isNegVOC:neg, _confidence:_conf, _classNote:_note});
+    const caseNo = iCase>=0 ? String(row[iCase]||'').trim() : '';
+    let surveyDate = iSdate>=0 ? row[iSdate] : '';
+    if(surveyDate instanceof Date) surveyDate = surveyDate.toISOString().slice(0,10);
+    else if(surveyDate) surveyDate = String(surveyDate);
+    const staffName = iStaff>=0 ? String(row[iStaff]||'').trim() : '';
+
+    recs.push({year, month, channel, storeType:st, score:sc, praised, voc, issueCategory:cat, isNegVOC:neg, _confidence:_conf, _classNote:_note,
+      caseNo, surveyDate, staffName});
   }
   return recs;
 }
@@ -1350,12 +1566,31 @@ function processFile(f, ch){
       if(typeof XLSX === 'undefined') throw new Error('XLSX 라이브러리가 로드되지 않았습니다. 인터넷 연결을 확인하세요.');
       const buf = e.target.result;
       const wb = XLSX.read(new Uint8Array(buf), {type:'array'});
+
+      // 완료일(날짜) 컬럼 분포를 보고, 선택한 월과 다른 데이터가 섞여 있으면 경고
+      const detected = detectFileYM(wb);
+      if(detected){
+        const selKey   = `${up.year}-${up.month}`;
+        const selCount = detected.counts[selKey] || 0;
+        const selShare = selCount / detected.total;
+        if(selShare < 0.5){
+          const proceed = confirm(
+            `⚠️ ${ch}: 선택하신 ${up.year}년 ${up.month}월(완료일 기준) 데이터는 엑셀 파일 전체 ${detected.total}건 중 ` +
+            `${selCount}건(${Math.round(selShare*100)}%)뿐입니다.\n` +
+            `파일에는 주로 ${detected.topYear}년 ${detected.topMonth}월 데이터(${Math.round(detected.topShare*100)}%)가 들어 있습니다.\n\n` +
+            `그래도 ${up.year}년 ${up.month}월 데이터로 등록하시겠습니까?`
+          );
+          if(!proceed){ document.getElementById(`fi-${ch}`).value = ''; return; }
+        }
+      }
+
       const recs = parseXL(wb, ch, up.year, up.month);
       if(!recs.length){
         showErr(`${ch}: 유효한 NPS 점수(0~10점)를 찾지 못했습니다. 점수 컬럼명을 확인해주세요. (예: 점수, 답변, NPS점수)`);
         return;
       }
       up.recs = recs;
+      t7CaptureCaseInfo(recs);
       up.fileName = f.name;
       up.pendingFile = null;
       updateRowStatus(ch, recs.length, f.name);
@@ -1558,6 +1793,7 @@ async function _loadAllFromIDB(){
     try{
       const wb = XLSX.read(new Uint8Array(rec.data), {type:'array'});
       const recs = parseXL(wb, rec.channel, rec.year, rec.month);
+      t7CaptureCaseInfo(recs);
       allRecs.push(...recs);
     } catch(ex){ console.warn(`IDB 로드 실패: ${rec.channel} ${rec.year}년${rec.month}월`, ex); }
   }
@@ -1740,6 +1976,7 @@ function applyFilter(){
     `${recs.length.toLocaleString()}건 표시 (전체 누적 ${_allRecs.length.toLocaleString()}건)`;
   renderAll(analyze(recs));
   if(document.getElementById('t4')?.classList.contains('act')) renderT4Action();
+  if(document.getElementById('t7')?.classList.contains('act')) renderT7();
 }
 function resetFilter(){
   _fSt=_avail.length?{..._avail[0]}:null;
@@ -1749,6 +1986,7 @@ function resetFilter(){
   document.getElementById('fCount').textContent=_allRecs.length.toLocaleString()+'건 표시 중 (전체)';
   renderAll(analyze(_allRecs));
   if(document.getElementById('t4')?.classList.contains('act')) renderT4Action();
+  if(document.getElementById('t7')?.classList.contains('act')) renderT7();
 }
 function initDashFilter(){
   if(!_avail.length) return;
@@ -2791,6 +3029,7 @@ function switchTab(id,btn){
   if(id==='t6') renderRawTable();
   if(id==='t4') renderT4Action();
   if(id==='t5' && _lastD) try{ renderTrendSection(_lastD); }catch(e){ console.error(e); }
+  if(id==='t7') renderT7();
 }
 
 /* ── 4번 탭: 월별 개선 Action 관리 ── */
@@ -2850,7 +3089,8 @@ function renderT4Action(){
       const isDone = status==='완료';
       const [stBg,stFg]=(stMap[status]||'#f1f5f9|#475569').split('|');
       const acts = (ACTIONS[iss.cat]||{acts:[]}).acts;
-      const actHtml = acts.map(a=>`<div style="display:flex;gap:5px;margin-bottom:3px"><span style="color:#94a3b8;flex-shrink:0">·</span><span>${a}</span></div>`).join('');
+      const autoPlan = acts.map(a=>'- '+a).join('\n');
+      const planVal = saved.plan!=null ? saved.plan : autoPlan;
       return `<tr style="border-bottom:1px solid #f1f5f9;vertical-align:top;${isDone?'opacity:.6;':''}">
         <td style="padding:8px 10px;text-align:center;width:36px">
           <span style="font-size:17px;font-weight:900;color:${iss.rank<=3?'#ef4444':'#94a3b8'}">${iss.rank}</span>
@@ -2859,8 +3099,13 @@ function renderT4Action(){
           <div style="font-weight:700;font-size:12px;color:#1e293b">${iss.cat}</div>
           <div style="font-size:10px;color:#94a3b8;margin-top:2px">${iss.count}건 · ${iss.pct}%</div>
         </td>
-        <td style="padding:8px 10px;font-size:11px;color:#374151;line-height:1.6;overflow:hidden">
-          ${actHtml||'<span style="color:#cbd5e1">-</span>'}
+        <td style="padding:6px 8px;overflow:hidden">
+          <textarea placeholder="개선 Action(안)을 입력하세요" class="t4-result-ta"
+            data-ym="${ym}" data-cat="${iss.cat}" data-field="plan"
+            onchange="saveActField(this)"
+            oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"
+            readonly
+            style="width:100%;min-height:60px;padding:6px 8px;border:1.5px solid #e2e8f0;border-radius:6px;font-size:11px;font-family:inherit;resize:none;box-sizing:border-box;line-height:1.6;background:#f8fafc;color:#374151;cursor:default">${planVal.replace(/</g,'&lt;')}</textarea>
         </td>
         <td style="padding:6px 8px;overflow:hidden">
           <textarea placeholder="처리결과 / 진행내용을 입력하세요" class="t4-result-ta"
@@ -4007,6 +4252,7 @@ async function reloadHistoryFile(id){
     const wb = XLSX.read(new Uint8Array(rec.data), {type:'array'});
     const recs = parseXL(wb, ch, rec.year, rec.month);
     if(!recs.length){ showErr(`${ch}: 저장된 파일에서 유효한 NPS 점수를 찾지 못했습니다.`); return; }
+    t7CaptureCaseInfo(recs);
 
     _uploads[ch].year  = rec.year;
     _uploads[ch].month = rec.month;
@@ -4334,9 +4580,330 @@ function submitPw(){
   if(cb) cb();
 }
 
+/* ══ ⑤ 불만 케어 탭 — 원본 NPS 파일 업로드 + 전부 수기 입력 ══ */
+/* 채널 색상 — 메인 업로드 채널(CHANNELS)과 동일한 색상 체계 재사용 */
+const T7_TYPE_COLOR = {"매장":"--c-store","일반배송":"--c-gen","블랙배송":"--c-blk","상담":"--c-cs","AS":"--c-as"};
+const T7_TYPE_BG = {"매장":"#eaf1fb","일반배송":"#e8f5ef","블랙배송":"#eef0f3","상담":"#f1edfa","AS":"#fbeee3"};
+let _t7State = {type:"all", fault:"all", call:"all", q:"", scoreBand:"all", voc:"all", cat:"all", careStatus:"all"};
+let _t7Sort = {col: null, dir: 'desc'};
+
+function t7Sort(col){
+  _t7Sort.dir = _t7Sort.col===col && _t7Sort.dir==='desc' ? 'asc' : 'desc';
+  _t7Sort.col = col;
+  t7RenderTable();
+}
+function t7ApplySort(rows){
+  if(!_t7Sort.col) return rows;
+  const dir = _t7Sort.dir==='asc' ? 1 : -1;
+  return [...rows].sort((a,b)=>{
+    let va, vb;
+    switch(_t7Sort.col){
+      case 'channel': va=a.channel||''; vb=b.channel||''; break;
+      case 'caseNo':  va=a.caseNo||'';  vb=b.caseNo||'';  break;
+      case 'ym':      va=a.ym||'';      vb=b.ym||'';      break;
+      case 'score':   va=a.score;       vb=b.score;       break;
+      case 'staff':   va=a.staff||'';   vb=b.staff||'';   break;
+      case 'fault':   va=a.fault||'';   vb=b.fault||'';   break;
+      case 'call':    va=a.call||'';    vb=b.call||'';    break;
+      default: return 0;
+    }
+    if(typeof va==='string') return dir*va.localeCompare(vb,'ko');
+    return dir*(va-vb);
+  });
+}
+function t7ThH(col, label, align){
+  const on  = _t7Sort.col===col;
+  const ind = on ? (_t7Sort.dir==='desc'?'↓':'↑') : '⇅';
+  const st  = on ? 'color:#c9a84c' : 'opacity:.35';
+  const al  = align||'center';
+  return `<th onclick="t7Sort('${col}')" style="cursor:pointer;user-select:none;text-align:${al}" title="클릭하여 정렬">
+    <span style="display:inline-flex;align-items:center;gap:3px;justify-content:${al==='left'?'flex-start':'center'}">
+      ${label}<span style="font-size:11px;${st}">${ind}</span>
+    </span></th>`;
+}
+
+function t7Esc(s){
+  return String(s==null?'':s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+}
+function t7AttrEsc(s){ return t7Esc(s).replace(/"/g,'&quot;'); }
+
+/* ── 귀책/통화/CCC/케어상태 수기 입력 오버레이 ──
+   원본 NPS 데이터(①~④,⑦과 공유)는 건드리지 않고, 레코드별 케어 기록만 별도로 저장한다.
+   키는 접수/판매번호가 있으면 그걸 쓰고, 없으면 채널+연월+점수+VOC 앞부분으로 대체 키를 만든다. */
+let T7_CARE = {};
+function t7Key(r){
+  if(r.caseNo) return 'case:'+r.caseNo;
+  return 'k:'+r.channel+'|'+r.year+'-'+r.month+'|'+r.score+'|'+String(r.voc||'').slice(0,40);
+}
+function t7LoadCare(){
+  try{
+    const raw = localStorage.getItem('t7_care_v1');
+    T7_CARE = raw ? JSON.parse(raw) : {};
+  }catch(e){ T7_CARE = {}; }
+}
+function t7SaveCare(){
+  try{ localStorage.setItem('t7_care_v1', JSON.stringify(T7_CARE)); }catch(e){}
+}
+
+/* ── 접수/판매번호 로컬 보존 ──
+   현재 Supabase nps_records 테이블엔 접수번호 컬럼이 없어 새로고침하면 서버에서 다시 읽어올 때 사라진다.
+   그래서 업로드 직후(아직 캐이스번호가 살아있는 시점)에 "채널+연월+점수+VOC 전체" 지문으로 접수번호를
+   이 브라우저에 따로 저장해두고, 새로고침 후에는 같은 지문으로 복구한다.
+   같은 브라우저에서 계속 작업하는 한 유지되며, 다른 PC/브라우저까지 공유하려면
+   Supabase 쪽에 case_no(접수번호)/staff_name(담당자) 컬럼을 추가해야 한다. */
+let T7_CASE_LOOKUP = {};
+function t7Fingerprint(r){
+  return `${r.channel}|${r.year}-${r.month}|${r.score}|${String(r.voc||'')}`;
+}
+function t7LoadCaseLookup(){
+  try{
+    const raw = localStorage.getItem('t7_case_lookup_v1');
+    T7_CASE_LOOKUP = raw ? JSON.parse(raw) : {};
+  }catch(e){ T7_CASE_LOOKUP = {}; }
+}
+function t7SaveCaseLookup(){
+  try{ localStorage.setItem('t7_case_lookup_v1', JSON.stringify(T7_CASE_LOOKUP)); }catch(e){}
+}
+function t7CaptureCaseInfo(recs){
+  let added = 0;
+  recs.forEach(r=>{
+    if(!r.caseNo) return;
+    T7_CASE_LOOKUP[t7Fingerprint(r)] = {caseNo: r.caseNo, staffName: r.staffName||'', surveyDate: r.surveyDate||''};
+    added++;
+  });
+  if(added) t7SaveCaseLookup();
+}
+function t7CareOf(key){
+  return T7_CARE[key] || {fault:'-', call:'-', callNote:'', ccc:'', coupon:'-', care:'-'};
+}
+
+/* ①④⑦ 과 동일한 getFiltered() 데이터에서 0~6점(비추천)만 뽑아 케어 기록을 덧붙인다 — 완전히 같은 원본 */
+function t7Data(){
+  return getFiltered().filter(r => isDetractor(r.score)).map(r => {
+    let caseNo = r.caseNo || '';
+    let staffName = r.staffName || '';
+    if(!caseNo){
+      const hit = T7_CASE_LOOKUP[t7Fingerprint(r)];
+      if(hit){ caseNo = hit.caseNo; staffName = staffName || hit.staffName || ''; }
+    }
+    const rr = {...r, caseNo};
+    const key = t7Key(rr);
+    const care = t7CareOf(key);
+    return {
+      key,
+      channel: r.channel,
+      caseNo,
+      ym: (r.year && r.month) ? `${r.year}년 ${r.month}월` : '',
+      score: r.score,
+      voc: r.voc || '',
+      staff: staffName,
+      issueCategory: r.issueCategory || '기타',
+      fault: care.fault, call: care.call, callNote: care.callNote, ccc: care.ccc, coupon: care.coupon, care: care.care
+    };
+  });
+}
+
+/* 케어 상태는 담당자가 아래 4가지 중 직접 선택한다 — 통화 여부와는 별개 개념(고객이 막무가내로
+   불만만 찍고 통화가 불필요/불가한 경우도 "완료(미착수)"로 종결 처리할 수 있음). 통화 자체의
+   완료/대기/부재 여부는 상세보기에서 기존처럼 별도로 기록한다. */
+function t7CareStatus(r){
+  if(r.care==="완료(착수)") return {label:"완료(착수)", bg:"#edf7f2", fg:"#2e8a5e"};
+  if(r.care==="완료(미착수)") return {label:"완료(미착수)", bg:"#eef2f6", fg:"#64748b"};
+  if(r.care==="진행중") return {label:"진행중", bg:"#f5efd8", fg:"#8a6e2e"};
+  return {label:"미확인", bg:"#f1f5f9", fg:"#94a3b8"};
+}
+function t7ScoreStyle(score){
+  if(score<=2) return {bg:"#f5e4e4", fg:"#a04040", mid:"#dd8f8b"};
+  if(score<=4) return {bg:"#f5efd8", fg:"#8a6e2e", mid:"#dcb563"};
+  return {bg:"#eef2f6", fg:"#64748b", mid:"#9fb0c4"};
+}
+function t7Filtered(){
+  const q = (_t7State.q||'').trim().toLowerCase();
+  return t7Data().filter(r=>{
+    if(_t7State.type!=='all' && r.channel!==_t7State.type) return false;
+    if(_t7State.fault!=='all' && r.fault!==_t7State.fault) return false;
+    if(_t7State.call!=='all' && r.call!==_t7State.call) return false;
+    if(_t7State.careStatus!=='all' && t7CareStatus(r).label !== _t7State.careStatus) return false;
+    if(_t7State.scoreBand==='low'  && !(r.score<=2)) return false;
+    if(_t7State.scoreBand==='mid'  && !(r.score>=3 && r.score<=4)) return false;
+    if(_t7State.scoreBand==='high' && !(r.score>=5)) return false;
+    if(_t7State.voc==='has' && !(r.voc && r.voc.trim())) return false;
+    if(_t7State.cat!=='all' && r.issueCategory !== _t7State.cat) return false;
+    if(q && !(String(r.caseNo||'').toLowerCase().includes(q) || String(r.voc||'').toLowerCase().includes(q))) return false;
+    return true;
+  });
+}
+function t7SetFilter(key, val, btn){
+  _t7State[key] = val;
+  if(key==='type' && btn){
+    document.querySelectorAll('#t7TypeChips .t7-chip').forEach(c=>c.classList.remove('act'));
+    btn.classList.add('act');
+  }
+  t7RenderTable();
+}
+
+function renderT7(){
+  const data = t7Data();
+  const total = data.length;
+  if(total===0){
+    document.getElementById('t7Thead').innerHTML = '';
+    document.getElementById('t7Tbody').innerHTML = `<tr><td colspan="9" style="text-align:center;color:#94a3b8;padding:20px">0~6점(비추천) 데이터가 없습니다. 상단에서 NPS 원본 파일을 업로드해주세요.</td></tr>`;
+    ['t7KpiTotal','t7KpiFault','t7KpiDone','t7KpiPending','t7KpiCoupon'].forEach(id=>document.getElementById(id).textContent='—');
+    ['t7KpiDoneSub','t7KpiPendingSub'].forEach(id=>document.getElementById(id).textContent='—');
+    document.getElementById('t7BarsType').innerHTML = '';
+    document.getElementById('t7BarsScore').innerHTML = '';
+    document.getElementById('t7Donut').style.background = 'conic-gradient(var(--det) 0% 0%, #f1f5f9 0% 100%)';
+    document.getElementById('t7DonutPct').textContent = '-';
+    return;
+  }
+  const faultKnown = data.filter(r=>r.fault==='O'||r.fault==='X');
+  const faultO = data.filter(r=>r.fault==='O').length;
+  const doneTouched   = data.filter(r=>r.care==='완료(착수)').length;
+  const doneUntouched = data.filter(r=>r.care==='완료(미착수)').length;
+  const doneTotal     = doneTouched + doneUntouched;
+  const inProgress    = data.filter(r=>r.care==='진행중').length;
+  const unconfirmed    = data.filter(r=>r.care!=='완료(착수)' && r.care!=='완료(미착수)' && r.care!=='진행중').length;
+  const pendingTotal  = inProgress + unconfirmed;
+  const coupon = data.filter(r=>r.coupon==='O').length;
+  document.getElementById('t7KpiTotal').textContent = total+'건';
+  document.getElementById('t7KpiFault').textContent = faultO+'건';
+  document.getElementById('t7KpiFaultPct').textContent = faultKnown.length
+    ? Math.round(faultO/faultKnown.length*100)+'% · 확인된 건 중 당사 귀책'
+    : '소명확인 입력 전';
+  document.getElementById('t7KpiDone').textContent = doneTotal+'건';
+  document.getElementById('t7KpiDoneSub').textContent = `착수 ${doneTouched} · 미착수 ${doneUntouched}`;
+  document.getElementById('t7KpiPending').textContent = pendingTotal+'건';
+  document.getElementById('t7KpiPendingSub').textContent = `진행중 ${inProgress} · 미확인 ${unconfirmed}`;
+  document.getElementById('t7KpiCoupon').textContent = coupon+'건';
+
+  const pct = faultKnown.length ? Math.round(faultO/faultKnown.length*100) : 0;
+  document.getElementById('t7Donut').style.background = `conic-gradient(var(--det) 0% ${pct}%, #f1f5f9 ${pct}% 100%)`;
+  document.getElementById('t7DonutPct').textContent = faultKnown.length ? pct+'%' : '-';
+
+  const types = CHANNELS;
+  const countsT = types.map(t=> data.filter(r=>r.channel===t).length);
+  document.getElementById('t7BarsType').innerHTML = types.map((t,i)=>{
+    const pctT = total ? Math.round(countsT[i]/total*100) : 0;
+    const hex = CH_HEX[t];
+    return `<div class="t7-bar-row"><span>${t}</span><span class="t7-bar-track"><span class="t7-bar-fill" style="width:${pctT}%;background:${hex}"></span></span><span style="text-align:right;color:#94a3b8">${countsT[i]}건 (${pctT}%)</span></div>`;
+  }).join('');
+
+  const scores = [0,1,2,3,4,5,6];
+  const countsS = scores.map(s=> data.filter(r=>r.score===s).length);
+  document.getElementById('t7BarsScore').innerHTML = scores.map((s,i)=>{
+    const pctS = total ? Math.round(countsS[i]/total*100) : 0;
+    const sc = t7ScoreStyle(s);
+    return `<div class="t7-bar-row"><span>${s}점</span><span class="t7-bar-track"><span class="t7-bar-fill" style="width:${pctS}%;background:${sc.mid}"></span></span><span style="text-align:right;color:#94a3b8">${countsS[i]}건 (${pctS}%)</span></div>`;
+  }).join('');
+
+  t7RenderTable();
+}
+function t7RenderTable(){
+  const rows = t7ApplySort(t7Filtered());
+  document.getElementById('t7RowCount').textContent = rows.length+'건 표시';
+  document.getElementById('t7Thead').innerHTML = `<tr>
+    ${t7ThH('channel','구분')}
+    ${t7ThH('caseNo','접수/판매번호')}
+    ${t7ThH('ym','데이터 월')}
+    ${t7ThH('score','점수')}
+    <th style="text-align:left;cursor:default">내용</th>
+    ${t7ThH('staff','담당자')}
+    ${t7ThH('fault','귀책')}
+    ${t7ThH('call','통화상태')}
+    <th style="cursor:default">케어 상태</th>
+  </tr>`;
+  document.getElementById('t7Tbody').innerHTML = rows.map(r=>{
+    const cs = t7CareStatus(r);
+    const sc = t7ScoreStyle(r.score);
+    const colorVar = T7_TYPE_COLOR[r.channel] || '--accent';
+    const faultBg = r.fault==='O' ? '#f5e4e4' : (r.fault==='X' ? '#edf7f2' : '#f1f5f9');
+    const faultFg = r.fault==='O' ? '#a04040' : (r.fault==='X' ? '#2e8a5e' : '#94a3b8');
+    return `<tr class="t7-row" data-key="${t7AttrEsc(r.key)}">
+      <td><span class="t7-badge" style="background:${T7_TYPE_BG[r.channel]||'#eef2f6'};color:var(${colorVar})">${r.channel}</span></td>
+      <td>${r.caseNo || '-'}</td>
+      <td>${r.ym}</td>
+      <td><span class="t7-pill" style="background:${sc.bg};color:${sc.fg};font-weight:900">${r.score}</span></td>
+      <td style="text-align:left;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#64748b" title="${t7AttrEsc(r.voc)}">${t7Esc(r.voc) || '(내용 없음)'}</td>
+      <td>${t7Esc(r.staff) || '-'}</td>
+      <td><span class="t7-pill" style="background:${faultBg};color:${faultFg}">${r.fault==='-'?'미확인':r.fault}</span></td>
+      <td>${r.call}</td>
+      <td><span class="t7-pill" style="background:${cs.bg};color:${cs.fg}">${cs.label}</span></td>
+    </tr>`;
+  }).join('') || `<tr><td colspan="9" style="text-align:center;color:#94a3b8;padding:20px">조건에 맞는 건이 없습니다</td></tr>`;
+}
+(function(){
+  const tb = document.getElementById('t7Tbody');
+  if(tb) tb.addEventListener('click', e=>{
+    const tr = e.target.closest('tr[data-key]');
+    if(tr) t7OpenDetail(tr.getAttribute('data-key'));
+  });
+})();
+
+function t7OpenDetail(key){
+  const r = t7Data().find(x=>x.key===key);
+  if(!r) return;
+  const sc = t7ScoreStyle(r.score);
+  const colorVar = T7_TYPE_COLOR[r.channel] || '--accent';
+  const faultBg = r.fault==='O' ? '#f5e4e4' : (r.fault==='X' ? '#edf7f2' : '#f1f5f9');
+  const faultFg = r.fault==='O' ? '#a04040' : (r.fault==='X' ? '#2e8a5e' : '#94a3b8');
+  const cs = t7CareStatus(r);
+  const sel = (id, options, cur) => `<select id="${id}" class="raw-sel" style="width:100%">` +
+    options.map(o=>`<option value="${o.v}" ${o.v===cur?'selected':''}>${o.l}</option>`).join('') + `</select>`;
+
+  const bodyHtml = `
+    <div class="modal-ttl" style="font-size:17px">접수 ${r.caseNo ? '#'+t7Esc(r.caseNo) : '(번호 없음)'}</div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 16px">
+      <span class="t7-badge" style="background:${T7_TYPE_BG[r.channel]||'#eef2f6'};color:var(${colorVar})">${r.channel}</span>
+      <span class="t7-pill" style="background:${sc.bg};color:${sc.fg};font-weight:900">${r.score}점</span>
+      <span class="t7-pill" style="background:${faultBg};color:${faultFg}">귀책 ${r.fault==='-'?'미확인':r.fault}</span>
+      <span class="t7-pill" style="background:${cs.bg};color:${cs.fg}">케어 ${cs.label}</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="t7-field"><div class="k">데이터 월</div><div class="v">${r.ym || '-'}</div></div>
+      <div class="t7-field"><div class="k">담당자</div><div class="v">${t7Esc(r.staff) || '-'}</div></div>
+    </div>
+    <div class="t7-field"><div class="k">고객 코멘트 (VOC)</div><div class="v">${t7Esc(r.voc) || '(내용 없음)'}</div></div>
+    <div class="t7-field"><div class="k">CCC부 확인 내용 (직접 작성)</div>
+      <textarea id="t7EditCcc" class="modal-inp" style="width:100%;min-height:90px;font-family:inherit;font-size:12.5px" placeholder="소명 확인 내용을 입력하세요">${t7Esc(r.ccc)}</textarea></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+      <div class="t7-field"><div class="k">귀책 여부</div>${sel('t7EditFault', [{v:'-',l:'미확인'},{v:'O',l:'O (당사 귀책)'},{v:'X',l:'X (고객과실/오분류)'}], r.fault)}</div>
+      <div class="t7-field"><div class="k">통화 상태</div>${sel('t7EditCall', [{v:'-',l:'미확인'},{v:'완료',l:'완료'},{v:'대기',l:'대기'},{v:'부재/거부',l:'부재·거부'}], r.call)}</div>
+      <div class="t7-field"><div class="k">케어 상태</div>${sel('t7EditCare', [{v:'-',l:'미확인'},{v:'진행중',l:'진행중'},{v:'완료(미착수)',l:'완료(미착수)'},{v:'완료(착수)',l:'완료(착수)'}], r.care)}</div>
+    </div>
+    <div class="t7-field"><div class="k">고객 통화 내용</div>
+      <textarea id="t7EditCallNote" class="modal-inp" style="width:100%;min-height:70px;font-family:inherit;font-size:12.5px" placeholder="고객 통화 결과를 입력하세요">${t7Esc(r.callNote)}</textarea></div>
+    <div class="t7-field" style="max-width:220px">${sel('t7EditCoupon', [{v:'-',l:'기프티콘 미확인'},{v:'O',l:'기프티콘 지급'},{v:'X',l:'기프티콘 미지급'}], r.coupon)}</div>
+    <div class="modal-btns" style="margin-top:14px">
+      <button class="btn btn-o" onclick="t7CloseDetail()">닫기</button>
+      <button class="btn btn-p" onclick="t7SaveEdit('${key.replace(/'/g,"\\'")}')">💾 저장</button>
+    </div>`;
+
+  document.getElementById('t7ModalBody').innerHTML = bodyHtml;
+  document.getElementById('t7Modal').classList.add('open');
+}
+function t7SaveEdit(key){
+  T7_CARE[key] = {
+    fault: document.getElementById('t7EditFault').value,
+    call: document.getElementById('t7EditCall').value,
+    care: document.getElementById('t7EditCare').value,
+    callNote: document.getElementById('t7EditCallNote').value.trim(),
+    ccc: document.getElementById('t7EditCcc').value.trim(),
+    coupon: document.getElementById('t7EditCoupon').value
+  };
+  t7SaveCare();
+  t7CloseDetail();
+  renderT7();
+}
+function t7CloseDetail(){
+  document.getElementById('t7Modal').classList.remove('open');
+}
+
 /* ══ 초기화 ══ */
 buildUploadUI();
 updateLoadedSummary();
+t7LoadCare();
+t7LoadCaseLookup();
+renderT7();
 initSupabase().then(async () => {
   if(!_supabase){
     await initDB();
