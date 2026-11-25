@@ -871,15 +871,16 @@ html:not(.pw-ok) body>*:not(#pwGate){display:none!important}
         </div>
       </div>
       <div class="t7-card" style="display:flex;flex-direction:column">
-        <h3>귀책 비율 <small>당사 귀책 확인 건 / 전체</small></h3>
+        <h3>귀책 비율 <small>전체 비추천 대비 소명 확인 현황</small></h3>
         <div style="flex:1;display:flex;flex-direction:column;justify-content:center;margin-top:10px">
           <div class="t7-donut-wrap">
-            <div class="t7-donut" id="t7Donut" style="background:conic-gradient(var(--det) 0% 0%, #f1f5f9 0% 100%)">
+            <div class="t7-donut" id="t7Donut" style="background:conic-gradient(var(--det) 0% 0%, #94a3b8 0% 0%, #f1f5f9 0% 100%)">
               <div class="ctr"><b id="t7DonutPct">0%</b><span>귀책 O</span></div>
             </div>
             <div class="t7-legend">
               <div><span class="dot" style="background:var(--det)"></span>귀책 O (당사 책임)</div>
-              <div><span class="dot" style="background:#f1f5f9;border:1px solid #e2e8f0"></span>귀책 X (고객과실/오분류)</div>
+              <div><span class="dot" style="background:#94a3b8"></span>귀책 X (고객과실/오분류)</div>
+              <div><span class="dot" style="background:#f1f5f9;border:1px solid #e2e8f0"></span>미확인 (아직 소명 확인 전)</div>
             </div>
           </div>
         </div>
@@ -4857,12 +4858,13 @@ function renderT7(){
     ['t7KpiDoneSub','t7KpiPendingSub'].forEach(id=>document.getElementById(id).textContent='—');
     document.getElementById('t7BarsType').innerHTML = '';
     document.getElementById('t7BarsScore').innerHTML = '';
-    document.getElementById('t7Donut').style.background = 'conic-gradient(var(--det) 0% 0%, #f1f5f9 0% 100%)';
+    document.getElementById('t7Donut').style.background = 'conic-gradient(var(--det) 0% 0%, #94a3b8 0% 0%, #f1f5f9 0% 100%)';
     document.getElementById('t7DonutPct').textContent = '-';
     return;
   }
   const faultKnown = data.filter(r=>r.fault==='O'||r.fault==='X');
   const faultO = data.filter(r=>r.fault==='O').length;
+  const faultX = data.filter(r=>r.fault==='X').length;
   const doneTouched   = data.filter(r=>r.care==='완료(착수)').length;
   const doneUntouched = data.filter(r=>r.care==='완료(미착수)').length;
   const doneTotal     = doneTouched + doneUntouched;
@@ -4881,9 +4883,13 @@ function renderT7(){
   document.getElementById('t7KpiPendingSub').textContent = `진행중 ${inProgress} · 미확인 ${unconfirmed}`;
   document.getElementById('t7KpiCoupon').textContent = coupon+'건';
 
-  const pct = faultKnown.length ? Math.round(faultO/faultKnown.length*100) : 0;
-  document.getElementById('t7Donut').style.background = `conic-gradient(var(--det) 0% ${pct}%, #f1f5f9 ${pct}% 100%)`;
-  document.getElementById('t7DonutPct').textContent = faultKnown.length ? pct+'%' : '-';
+  // 귀책 도넛: "확인된 건 중 비율"만 보여주면 2건 중 2건이 O인 것처럼 소수 표본이
+  // 100%로 꽉 찬 원으로 보여 전체 49건을 다 들여다본 것으로 오인하기 쉽다.
+  // 전체 비추천 건수 대비로 그려서 "아직 대부분 미확인"이라는 사실이 같이 보이게 한다.
+  const pctO = total ? Math.round(faultO/total*100) : 0;
+  const pctOX = total ? Math.round((faultO+faultX)/total*100) : 0;
+  document.getElementById('t7Donut').style.background = `conic-gradient(var(--det) 0% ${pctO}%, #94a3b8 ${pctO}% ${pctOX}%, #f1f5f9 ${pctOX}% 100%)`;
+  document.getElementById('t7DonutPct').textContent = total ? pctO+'%' : '-';
 
   const types = CHANNELS;
   const countsT = types.map(t=> data.filter(r=>r.channel===t).length);
