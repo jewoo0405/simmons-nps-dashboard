@@ -4196,6 +4196,17 @@ function deleteFileById(id){
   });
 }
 
+function _clearCareOverlay(){
+  // 불만케어 케어상태/통화메모는 nps_records와 별개로 이 브라우저의 localStorage에
+  // "채널+연월+점수+VOC 앞부분" 지문으로 저장된다 — 전체 삭제 후 같은 파일을 다시
+  // 올리면 지문이 똑같아서 완료(착수) 등 이전 상태가 그대로 되살아난다. 전체 삭제는
+  // 사용자 입장에서 "완전 초기화"를 기대하므로 이 오버레이도 함께 비운다.
+  T7_CARE = {};
+  T7_CASE_LOOKUP = {};
+  try{ localStorage.removeItem('t7_care_v1'); }catch(e){}
+  try{ localStorage.removeItem('t7_case_lookup_v1'); }catch(e){}
+}
+
 async function clearAllHistory(){
   if(_supabase){
     showPwModal(async () => {
@@ -4204,6 +4215,7 @@ async function clearAllHistory(){
       if(error){ alert('삭제 실패: '+error.message); return; }
       const {error: logErr} = await _supabase.from('upload_log').delete().gte('year', 0);
       if(logErr) console.error('[Supabase] upload_log 전체 삭제 실패:', logErr);
+      _clearCareOverlay();
       _allRecs = []; _avail = []; _fSt = null; _fEn = null;
       document.getElementById('dash').style.display = 'none';
       document.getElementById('upPage').style.display = 'block';
@@ -4216,6 +4228,7 @@ async function clearAllHistory(){
       if(!_db) return;
       const req = _idbTx('readwrite').clear();
       req.onsuccess = () => {
+        _clearCareOverlay();
         _allRecs = []; _avail = []; _fSt = null; _fEn = null;
         document.getElementById('dash').style.display = 'none';
         document.getElementById('upPage').style.display = 'block';
