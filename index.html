@@ -1399,11 +1399,13 @@ const STALIAS = {
 const STORE_TYPE_VALS = ['직영갤러리','맨션','위탁백화점','n32','직영백화점'];
 
 function matchAlias(header, aliases){
-  const h = String(header||'').toLowerCase().replace(/[\s_\-]/g,'');
+  const h = String(header||'').toLowerCase().replace(/[\s_\-\/·()]/g,'');
   return aliases.some(a => {
-    const ak = a.toLowerCase().replace(/[\s_\-]/g,'');
-    // 짧은 키워드(3자 이하 or 한글 2자 이하)는 완전 일치만 허용
-    if(ak.length <= 4) return h === ak;
+    const ak = a.toLowerCase().replace(/[\s_\-\/·()]/g,'');
+    // '점수'/'날짜'처럼 2자 이하의 짧고 범용적인 키워드만 완전 일치를 요구한다.
+    // '담당자'/'접수번호'처럼 3~4자인 키워드는 "담당자명", "접수번호/판매번호"처럼
+    // 실제 엑셀에서 흔히 쓰이는 복합 헤더에도 걸리도록 부분 일치를 허용한다.
+    if(ak.length <= 2) return h === ak;
     return h === ak || h.includes(ak);
   });
 }
