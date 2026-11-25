@@ -750,7 +750,7 @@ html:not(.pw-ok) body>*:not(#pwGate){display:none!important}
     <div style="margin-top:28px">
       <div style="display:flex;align-items:center;gap:8px;padding-bottom:10px;border-bottom:2px solid #1a1a2e;margin-bottom:6px">
         <div style="width:22px;height:22px;border-radius:50%;background:#1a1a2e;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">▸</div>
-        <h2 style="font-size:14px;font-weight:700;color:#1a1a2e">채널별 핵심 이슈 & 개선 Action</h2>
+        <h2 style="font-size:14px;font-weight:700;color:#1a1a2e">채널별 다빈도 VOC & 개선 Action (안)</h2>
         <span style="font-size:11px;color:#64748b;margin-left:auto;font-weight:700;letter-spacing:1px">SIMMONS</span>
       </div>
       <div id="actChWrap"></div>
@@ -1049,7 +1049,6 @@ let _fSt = null, _fEn = null;
 let _trendCh  = null;   // null = 전체, string = 특정 채널
 let _lastD    = null;   // 마지막 분석 결과 캐시
 let _lastIssues = [];        // 전사 개선 Action (현재 필터 기준)
-let _monthlyIssues = {};     // 월별 이슈 랭킹 {ym: [{rank,cat,count,pct}]}
 let _vocType = 'det';       // VOC 탭 현재 타입: 'det' | 'pas' | 'pro'
 let _lastAnalyzeD = null;   // 마지막 analyze 결과 캐시 (VOC 탭 전환용)
 let _editMode = false;  // RAW 테이블 수정 모드
@@ -1238,6 +1237,32 @@ const VOC_KW = {
     '반입','엘리베이터','계단','층','폐기','수거','회수'
   ]
 };
+/* 긍정 표현 탐지 — "잘해주"처럼 붙여쓴 패턴뿐 아니라 "잘 응대해주셨다"처럼
+   잘/설명/안내 등 사이에 다른 단어가 끼는 흔한 띄어쓰기 패턴도 잡는다.
+   앞뒤 10글자 안에 부정 표현이 있으면 반어/부분부정으로 보고 긍정으로 치지 않는다. */
+const POS_WORDS = [
+  '만족','만족스','좋아요','좋아서','좋아하','좋았','좋은','좋다','좋고','좋음',
+  '칭찬','친절','감사','잘해주','최고','훌륭','빠르','깔끔','완벽',
+  '편안','편하','쾌적','기대이상','추천드','재구매','또올','또방문'
+];
+const POS_PATTERNS = [
+  /잘\s*[가-힣]{0,6}해주/, /잘\s*[가-힣]{0,6}해줬/, /잘\s*[가-힣]{0,6}해줌/,
+  /잘\s*[가-힣]{0,6}해준/   // "응대는 잘해준 편이에요"처럼 관형형(~한/~ㄴ)으로 끝나는 경우
+];
+const NEG_CTX = ['안 ','못 ','안되','못하','못해','지 않','지않','지 못','지못','않아','않았','않는','않고','못했','불만','불친','불편','없었','아니','안함','안해','안됨'];
+function hasPositiveSentiment(t){
+  if(!t) return false;
+  const lo = t.toLowerCase();
+  const noNegNear = (idx,len) => !NEG_CTX.some(n => lo.slice(Math.max(0,idx-10), idx+len+10).includes(n));
+  if(POS_WORDS.some(w=>{ const idx=lo.indexOf(w); return idx!==-1 && noNegNear(idx,w.length); })) return true;
+  for(const re of POS_PATTERNS){
+    const m = lo.match(re);
+    // 잘~해주 사이에 안해/못해 같은 부정 결합이 끼면(예: "잘 못해줬어요") 부분부정이므로 긍정으로 보지 않는다
+    // ("안내"처럼 "안"이 포함된 일반 단어는 부정으로 오인하지 않도록 구체적 부정 결합만 검사)
+    if(m && !/안해|안됨|안돼|안함|못해|못됨|못함/.test(m[0]) && noNegNear(m.index, m[0].length)) return true;
+  }
+  return false;
+}
 function classifyVOC(t){
   if(!t||!t.trim()) return '기타';
   const lo = t.toLowerCase(); let best='기타', top=0;
@@ -1270,10 +1295,7 @@ function classifyVOCMultiPass(t){
   if(!p2best) return {cat:a1.n>0?a1.c:'기타', confidence:'low', note:'가중치 산출 불가'};
 
   // Pass 3 — 모순·신뢰도 검증
-  const hasPos = ['만족','만족스','좋아요','좋아서','좋아하','좋았','좋은','좋다','좋고','좋음',
-                   '칭찬','친절','감사','잘해주','최고','훌륭','빠르','깔끔','완벽',
-                   '편안','편하','쾌적','기대이상','추천드','재구매','또올','또방문']
-                   .some(w=>lo.includes(w));
+  const hasPos = hasPositiveSentiment(t);
   const hasAmb = ['사용전','공란','모름','유보','아직','없음','해당없음']
                    .some(w=>lo.includes(w));
 
@@ -1312,23 +1334,14 @@ function isPassive(s)  { return s>6&&s<9; }
 function isPromoter(s) { return s>=9&&s<=10; }
 function isNegVOC(t){
   if(!t||!t.trim()) return false;
-  const pos=[
-    '만족','만족스','좋아요','좋아서','좋아하','좋았','좋은','좋다','좋고','좋음',
-    '칭찬','친절','감사','잘해주','최고','훌륭','빠르','깔끔','완벽',
-    '편안','편하','쾌적','기대이상','추천드','재구매','또올','또방문'
-  ];
-  const amb=['사용전','공란','모름','유보','아직','없음','해당없음'];
-  const negCtx=['안 ','못 ','안되','못하','지 않','지않','지 못','지못','않아','않았','않는','않고','못했','불만','불친','불편','없었','아니','안함','안해','안됨'];
   const lo = t.toLowerCase();
-  // 긍정어가 있어도 앞뒤 10글자 안에 부정 표현이 있으면 부정 VOC로 처리
-  const hasRealPos = pos.some(w => {
-    const idx = lo.indexOf(w);
-    if(idx === -1) return false;
-    const window = lo.slice(Math.max(0, idx-10), idx+w.length+10);
-    return !negCtx.some(n => window.includes(n));
-  });
-  if(hasRealPos) return false;
-  if(amb.some(w=>lo.includes(w))) return false;
+  if(hasPositiveSentiment(t)) return false;
+  // "사용전/아직/모름/유보/공란"은 문장 어디에 있어도 "아직 평가하기 이르다"는 뜻이라 안전하게 부분일치로 판단한다.
+  if(['사용전','공란','모름','유보','아직'].some(w=>lo.includes(w))) return false;
+  // "없음/해당없음"은 응답 자체가 비어있을 때만 모호 처리한다. "할인 혜택이 없음"처럼
+  // 문장 속 서술어로 쓰인 경우는 실제 불만 내용이므로 (문자열에 포함된다고) 제외하지 않는다.
+  const bare = lo.replace(/[\s\.\!\?,~]+/g,'');
+  if(['없음','해당없음','해당사항없음'].some(w=>bare===w)) return false;
   return true;
 }
 function roundToSum100(vals){
@@ -1922,19 +1935,7 @@ function analyze(recs){
     storeDetVOC['기타매장']={total:drO.length,neg:negO,negCount:negO.length,issueCounts:icO};
   }
 
-  // 월별 이슈 랭킹 (개선 Action 관리용)
-  const monthlyIssues={};
-  for(const ym of ymList){
-    const[y,m]=ym.split('-').map(Number);
-    const mNeg=recs.filter(r=>r.year===y&&r.month===m&&isDetractor(r.score)&&r.voc&&r.issueCategory!=='칭찬'&&isNegVOC(r.voc));
-    const mMap={};
-    for(const c of Object.keys(VOC_KW)) mMap[c]=mNeg.filter(r=>r.issueCategory===c).length;
-    const mEntries=Object.entries(mMap).filter(([,n])=>n>0).sort((a,b)=>b[1]-a[1]).slice(0,5);
-    const mPcts=mNeg.length&&mEntries.length?roundToSum100(mEntries.map(([,c])=>c/mNeg.length*100)):mEntries.map(()=>0);
-    monthlyIssues[ym]=mEntries.map(([cat,count],i)=>({rank:i+1,cat,count,pct:mPcts[i]}));
-  }
-
-  return{overall,chStats,detVOC,proVOC,pasVOC,issRank,allNeg,top3,top3pct,monthly,ymList,monthlyIssues,total:recs.length,storeStats,storeDetVOC};
+  return{overall,chStats,detVOC,proVOC,pasVOC,issRank,allNeg,top3,top3pct,monthly,ymList,total:recs.length,storeStats,storeDetVOC};
 }
 
 /* ════════════════════════════════════════════
@@ -2500,7 +2501,6 @@ function renderAll(d){
   const issNoEtc=d.issRank.filter(i=>i.category!=='기타');
   const issEtc=d.issRank.find(i=>i.category==='기타');
   _lastIssues = issNoEtc.slice(0,5);
-  _monthlyIssues = d.monthlyIssues || {};
   issNoEtc.slice(0,5).forEach((iss,i)=>{
     const r=i+1;
     const snips=iss.records.slice(0,3).map(x=>`<div class="snip">· ${x.voc.length>42?x.voc.slice(0,42)+'…':x.voc}</div>`).join('');
@@ -2629,6 +2629,15 @@ function renderAll(d){
         const info=ACTIONS[cat]||{owner:'CCC부',acts:['개선 방향 검토 필요']};
         const pct=dv.negCount?Math.round(n/dv.negCount*100):0;
         const rn=i+1;
+        const seenVoc=new Set();
+        const catVoc=(dv.neg||[]).filter(r=>{
+          if(r.issueCategory!==cat || !r.voc || !r.voc.trim()) return false;
+          if(seenVoc.has(r.voc)) return false;
+          seenVoc.add(r.voc); return true;
+        }).slice(0,3);
+        const vocHtml=catVoc.length
+          ? catVoc.map(r=>`<div style="padding:5px 8px;background:#f8fafc;border-left:3px solid #cbd5e1;border-radius:4px;font-size:11px;color:#475569;margin-bottom:4px">"${r.voc.replace(/</g,'&lt;')}"</div>`).join('')
+          : '<span style="font-size:11px;color:#cbd5e1">원문 없음</span>';
         return `<tr>
           <td style="text-align:center;font-size:17px;font-weight:900;color:${rn<=2?'#ef4444':rn===3?'#f97316':'#94a3b8'}">${rn}</td>
           <td style="font-weight:700;font-size:12px">${cat}</td>
@@ -2636,6 +2645,7 @@ function renderAll(d){
           <td style="text-align:center;color:#6b7280">${pct}%</td>
           <td class="ow">${info.owner}</td>
           <td><ul class="al">${info.acts.map(a=>`<li>${a}</li>`).join('')}</ul></td>
+          <td>${vocHtml}</td>
         </tr>`;
       }).join('');
       const sec=document.createElement('div');
@@ -2649,7 +2659,8 @@ function renderAll(d){
           <thead><tr>
             <th style="width:52px">순위</th><th style="width:140px">ISSUE</th>
             <th style="width:80px">건수</th><th style="width:72px">비중</th>
-            <th style="width:220px">개선 주관/협업</th><th>개선 Action (안)</th>
+            <th style="width:220px">개선 주관/협업</th><th style="width:300px">개선 Action (안)</th>
+            <th>근거 VOC (실제 고객 의견)</th>
           </tr></thead>
           <tbody>${rows}</tbody>
         </table>`:'<div style="background:#fff;border-radius:0 0 10px 10px;padding:12px;color:#94a3b8;font-size:12px">이슈 데이터 없음</div>'}`;
@@ -3046,12 +3057,54 @@ function filterT4(filter, btn){
   renderT4Action();
 }
 
+/* 불만케어(5번 탭) 접수목록에서 담당자가 케어상태를 "완료(착수)"로 지정한 건만
+   월별·카테고리별로 모아 개선 Action 근거로 연결한다. 단순 건수 상위가 아니라
+   담당자가 "조치 필요"로 확정한 건만 들어오게 하는 게이트 역할. */
+function getCareActionIssues(){
+  const recs = getFiltered().filter(r=>isDetractor(r.score));
+  const byYm = {};
+  recs.forEach(r=>{
+    if(!r.year||!r.month) return;
+    let caseNo = r.caseNo || '';
+    let staffName = r.staffName || '';
+    if(!caseNo || !staffName){
+      const hit = T7_CASE_LOOKUP[t7Fingerprint(r)];
+      if(hit){ caseNo = caseNo || hit.caseNo; staffName = staffName || hit.staffName || ''; }
+    }
+    const key = t7Key({...r, caseNo});
+    const care = t7CareOf(key);
+    if(care.care !== '완료(착수)') return;
+    const ym = `${r.year}-${String(r.month).padStart(2,'0')}`;
+    const cat = r.issueCategory || '기타';
+    if(!byYm[ym]) byYm[ym] = {};
+    if(!byYm[ym][cat]) byYm[ym][cat] = {count:0, samples:[]};
+    byYm[ym][cat].count++;
+    if(byYm[ym][cat].samples.length < 5) byYm[ym][cat].samples.push({
+      channel:r.channel, voc:r.voc, caseNo, staffName,
+      call:care.call, callNote:care.callNote, ccc:care.ccc
+    });
+  });
+  const out = {};
+  for(const ym of Object.keys(byYm)){
+    const cats = byYm[ym];
+    const total = Object.values(cats).reduce((s,c)=>s+c.count,0);
+    const entries = Object.entries(cats).sort((a,b)=>b[1].count-a[1].count);
+    out[ym] = entries.map(([cat,v],i)=>({
+      rank:i+1, cat, count:v.count,
+      pct: total ? Math.round(v.count/total*100) : 0,
+      samples: v.samples
+    }));
+  }
+  return out;
+}
+
 function renderT4Action(){
   const wrap = document.getElementById('t4Content');
   if(!wrap) return;
-  const yms = Object.keys(_monthlyIssues).sort().reverse(); // 최신월 먼저
+  const monthlyIssues = getCareActionIssues();
+  const yms = Object.keys(monthlyIssues).sort().reverse(); // 최신월 먼저
   if(!yms.length){
-    wrap.innerHTML='<div style="text-align:center;padding:40px;color:#94a3b8;font-size:13px">데이터를 업로드하면 월별 개선 Action이 자동 생성됩니다</div>';
+    wrap.innerHTML='<div style="text-align:center;padding:40px;color:#94a3b8;font-size:13px">불만케어 탭 접수목록에서 케어상태를 "완료(착수)"로 지정한 건이 생기면<br>개선 Action이 자동으로 생성됩니다</div>';
     return;
   }
 
@@ -3063,7 +3116,7 @@ function renderT4Action(){
   let totalAll=0, totalDone=0, totalIng=0, totalNew=0;
 
   const html = yms.map(ym => {
-    const issues = _monthlyIssues[ym] || [];
+    const issues = monthlyIssues[ym] || [];
     if(!issues.length) return '';
     const [y,m] = ym.split('-');
     const label = `${y}년 ${parseInt(m)}월`;
@@ -3087,45 +3140,85 @@ function renderT4Action(){
       const saved = loadAct(iss.cat, ym);
       const status = saved.status||'미시작';
       const isDone = status==='완료';
-      const [stBg,stFg]=(stMap[status]||'#f1f5f9|#475569').split('|');
       const acts = (ACTIONS[iss.cat]||{acts:[]}).acts;
       const autoPlan = acts.map(a=>'- '+a).join('\n');
       const planVal = saved.plan!=null ? saved.plan : autoPlan;
-      return `<tr style="border-bottom:1px solid #f1f5f9;vertical-align:top;${isDone?'opacity:.6;':''}">
-        <td style="padding:8px 10px;text-align:center;width:36px">
-          <span style="font-size:17px;font-weight:900;color:${iss.rank<=3?'#ef4444':'#94a3b8'}">${iss.rank}</span>
-        </td>
-        <td style="padding:8px 10px;overflow:hidden">
-          <div style="font-weight:700;font-size:12px;color:#1e293b">${iss.cat}</div>
-          <div style="font-size:10px;color:#94a3b8;margin-top:2px">${iss.count}건 · ${iss.pct}%</div>
-        </td>
-        <td style="padding:6px 8px;overflow:hidden">
-          <textarea placeholder="개선 Action(안)을 입력하세요" class="t4-result-ta"
-            data-ym="${ym}" data-cat="${iss.cat}" data-field="plan"
-            onchange="saveActField(this)"
-            oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"
-            readonly
-            style="width:100%;min-height:60px;padding:6px 8px;border:1.5px solid #e2e8f0;border-radius:6px;font-size:11px;font-family:inherit;resize:none;box-sizing:border-box;line-height:1.6;background:#f8fafc;color:#374151;cursor:default">${planVal.replace(/</g,'&lt;')}</textarea>
-        </td>
-        <td style="padding:6px 8px;overflow:hidden">
-          <textarea placeholder="처리결과 / 진행내용을 입력하세요" class="t4-result-ta"
-            data-ym="${ym}" data-cat="${iss.cat}" data-field="result"
-            onchange="saveActField(this)"
-            oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"
-            readonly
-            style="width:100%;min-height:60px;padding:6px 8px;border:1.5px solid #e2e8f0;border-radius:6px;font-size:11px;font-family:inherit;resize:none;box-sizing:border-box;line-height:1.6;background:#f8fafc;color:#374151;cursor:default">${(saved.result||'').replace(/</g,'&lt;')}</textarea>
-        </td>
-        <td style="padding:6px 8px;width:150px;text-align:center">
-          <div style="display:flex;flex-wrap:wrap;gap:3px;justify-content:center">
+      const deptVal = saved.dept!=null ? saved.dept : ((ACTIONS[iss.cat]||{}).owner||'');
+      const feedbackVal = saved.feedback||'';
+      const resultVal = saved.result||'';
+      const samplesHtml = (iss.samples&&iss.samples.length)
+        ? iss.samples.map(s=>{
+            const callTxt = (s.call && s.call!=='-') ? s.call : '미확인';
+            const meta=[];
+            if(s.staffName) meta.push(`담당자 <b>${s.staffName.replace(/</g,'&lt;')}</b>`);
+            meta.push(`통화상태 <b>${callTxt}</b>${s.callNote?' · '+s.callNote.replace(/</g,'&lt;'):''}`);
+            if(s.ccc) meta.push(`CCC부 확인: ${s.ccc.replace(/</g,'&lt;')}`);
+            return `<div style="padding:8px 10px;background:#f8fafc;border-left:3px solid #cbd5e1;border-radius:4px;margin-bottom:6px">
+              <div style="font-size:11px;color:#475569">"${(s.voc||'').replace(/</g,'&lt;')}" <span style="color:#94a3b8;font-size:10px">(${s.channel||''}${s.caseNo?' · #'+s.caseNo:''})</span></div>
+              <div style="font-size:10px;color:#64748b;margin-top:4px;display:flex;flex-wrap:wrap;gap:8px">${meta.map(p=>`<span>${p}</span>`).join('')}</div>
+            </div>`;
+          }).join('')
+        : '<div style="font-size:11px;color:#cbd5e1">해당 월 원문 VOC 없음</div>';
+
+      return `<div style="border:1px solid #e2e8f0;border-radius:10px;margin-bottom:12px;overflow:hidden;${isDone?'opacity:.6;':''}">
+        <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:#f8fafc;border-bottom:1px solid #e2e8f0;flex-wrap:wrap">
+          <span style="font-size:17px;font-weight:900;color:${iss.rank<=3?'#ef4444':'#94a3b8'}">${iss.rank}위</span>
+          <span style="font-weight:800;font-size:13px;color:#1e293b">${iss.cat}</span>
+          <span style="font-size:11px;color:#94a3b8">${iss.count}건 · ${iss.pct}%</span>
+          <div style="margin-left:auto;display:flex;flex-wrap:wrap;gap:3px">
             ${STATUS_OPTS.map(s=>{
               const[sBg,sFg]=(stMap[s]||'#f1f5f9|#475569').split('|');
               return `<button onclick="saveActStatus(this,'${s}')" class="t4-status-btn"
                 data-ym="${ym}" data-cat="${iss.cat}"
-                style="padding:3px 8px;border-radius:5px;border:1.5px solid ${status===s?sFg:'#e2e8f0'};background:${status===s?sBg:'#fff'};color:${status===s?sFg:'#94a3b8'};font-size:10px;font-weight:700;cursor:default;font-family:inherit;pointer-events:none;opacity:${status===s?'1':'.45'}">${s}</button>`;
+                style="padding:3px 9px;border-radius:5px;border:1.5px solid ${status===s?sFg:'#e2e8f0'};background:${status===s?sBg:'#fff'};color:${status===s?sFg:'#94a3b8'};font-size:10px;font-weight:700;cursor:default;font-family:inherit;pointer-events:none;opacity:${status===s?'1':'.45'}">${s}</button>`;
             }).join('')}
           </div>
-        </td>
-      </tr>`;
+        </div>
+        <div style="padding:12px 14px">
+          <div style="font-size:10px;font-weight:700;color:#94a3b8;margin-bottom:5px">근거 VOC (실제 고객 의견)</div>
+          ${samplesHtml}
+          <div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap">
+            <div style="flex:2;min-width:220px">
+              <div style="font-size:10px;font-weight:700;color:#94a3b8;margin-bottom:4px">개선 Action (안)</div>
+              <textarea placeholder="개선 Action(안)을 입력하세요" class="t4-result-ta"
+                data-ym="${ym}" data-cat="${iss.cat}" data-field="plan"
+                onchange="saveActField(this)"
+                oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"
+                readonly
+                style="width:100%;min-height:60px;padding:6px 8px;border:1.5px solid #e2e8f0;border-radius:6px;font-size:11px;font-family:inherit;resize:none;box-sizing:border-box;line-height:1.6;background:#f8fafc;color:#374151;cursor:default">${planVal.replace(/</g,'&lt;')}</textarea>
+            </div>
+            <div style="flex:1;min-width:160px">
+              <div style="font-size:10px;font-weight:700;color:#94a3b8;margin-bottom:4px">담당부서</div>
+              <input placeholder="전달 부서" class="t4-result-ta"
+                data-ym="${ym}" data-cat="${iss.cat}" data-field="dept"
+                onchange="saveActField(this)"
+                readonly
+                value="${deptVal.replace(/"/g,'&quot;')}"
+                style="width:100%;padding:6px 8px;border:1.5px solid #e2e8f0;border-radius:6px;font-size:11px;font-family:inherit;box-sizing:border-box;background:#f8fafc;color:#374151;cursor:default">
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap">
+            <div style="flex:1;min-width:220px">
+              <div style="font-size:10px;font-weight:700;color:#94a3b8;margin-bottom:4px">부서 피드백</div>
+              <textarea placeholder="담당부서로부터 받은 회신/피드백을 입력하세요" class="t4-result-ta"
+                data-ym="${ym}" data-cat="${iss.cat}" data-field="feedback"
+                onchange="saveActField(this)"
+                oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"
+                readonly
+                style="width:100%;min-height:50px;padding:6px 8px;border:1.5px solid #e2e8f0;border-radius:6px;font-size:11px;font-family:inherit;resize:none;box-sizing:border-box;line-height:1.6;background:#f8fafc;color:#374151;cursor:default">${feedbackVal.replace(/</g,'&lt;')}</textarea>
+            </div>
+            <div style="flex:1;min-width:220px">
+              <div style="font-size:10px;font-weight:700;color:#94a3b8;margin-bottom:4px">진행현황</div>
+              <textarea placeholder="현재 어떻게 진행되고 있는지 입력하세요" class="t4-result-ta"
+                data-ym="${ym}" data-cat="${iss.cat}" data-field="result"
+                onchange="saveActField(this)"
+                oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"
+                readonly
+                style="width:100%;min-height:50px;padding:6px 8px;border:1.5px solid #e2e8f0;border-radius:6px;font-size:11px;font-family:inherit;resize:none;box-sizing:border-box;line-height:1.6;background:#f8fafc;color:#374151;cursor:default">${resultVal.replace(/</g,'&lt;')}</textarea>
+            </div>
+          </div>
+        </div>
+      </div>`;
     }).join('');
 
     return `<div style="margin-bottom:20px;background:#fff;border-radius:12px;box-shadow:0 1px 4px rgba(0,0,0,.07);overflow:hidden">
@@ -3136,25 +3229,7 @@ function renderT4Action(){
         <span style="font-size:11px;color:#fde68a">진행중 ${mIng}</span>
         <span style="font-size:11px;color:#fca5a5">미시작 ${mNew}</span>
       </div>
-      <div style="overflow-x:auto">
-        <table style="width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed">
-          <colgroup>
-            <col style="width:44px">
-            <col style="width:110px">
-            <col style="width:300px">
-            <col style="width:auto">
-            <col style="width:200px">
-          </colgroup>
-          <thead><tr style="background:#f8fafc;font-size:10px;color:#64748b;font-weight:700">
-            <th style="padding:7px 10px;text-align:center">순위</th>
-            <th style="padding:7px 10px;text-align:left">이슈</th>
-            <th style="padding:7px 10px;text-align:left">개선 Action (안)</th>
-            <th style="padding:7px 10px;text-align:left">처리결과 / 진행내용</th>
-            <th style="padding:7px 10px;text-align:center">상태</th>
-          </tr></thead>
-          <tbody>${rowsHtml}</tbody>
-        </table>
-      </div>
+      <div style="padding:14px">${rowsHtml}</div>
     </div>`;
   }).join('');
 
@@ -3206,45 +3281,57 @@ function exportT4Excel(){
   if(typeof XLSX === 'undefined'){ alert('XLSX 라이브러리가 로드되지 않았습니다.'); return; }
   const wb = XLSX.utils.book_new();
   const statusLabel = {'미시작':'미시작','진행중':'진행중','완료':'완료','보류':'보류'};
-  const allYms = Object.keys(_monthlyIssues).sort();
-  const rows = [['월','순위','이슈 카테고리','건수','비율(%)','처리결과/진행내용','상태']];
+  const monthlyIssues = getCareActionIssues();
+  const allYms = Object.keys(monthlyIssues).sort();
+  const rows = [['월','순위','이슈 카테고리','건수','비율(%)','근거 VOC','담당부서','부서 피드백','진행현황','상태']];
   for(const ym of allYms){
-    const issues = _monthlyIssues[ym]||[];
+    const issues = monthlyIssues[ym]||[];
     for(const iss of issues){
       const saved = loadAct(iss.cat, ym);
+      const dept = saved.dept!=null ? saved.dept : ((ACTIONS[iss.cat]||{}).owner||'');
+      const sampleTxt = (iss.samples||[]).map(s=>{
+        const call = (s.call && s.call!=='-') ? s.call : '미확인';
+        return `"${s.voc}"(${s.channel}·#${s.caseNo||'-'}·담당 ${s.staffName||'-'}·통화 ${call}${s.callNote?' '+s.callNote:''}${s.ccc?' /CCC확인:'+s.ccc:''})`;
+      }).join(' / ');
       rows.push([
         ym, iss.rank, iss.cat, iss.count, iss.pct,
+        sampleTxt, dept,
+        saved.feedback||'',
         saved.result||'',
         statusLabel[saved.status]||'미시작'
       ]);
     }
   }
   const ws = XLSX.utils.aoa_to_sheet(rows);
-  ws['!cols'] = [{wch:10},{wch:6},{wch:16},{wch:8},{wch:10},{wch:40},{wch:8}];
+  ws['!cols'] = [{wch:10},{wch:6},{wch:16},{wch:8},{wch:10},{wch:40},{wch:16},{wch:30},{wch:30},{wch:8}];
   XLSX.utils.book_append_sheet(wb, ws, '개선 Action 관리');
   XLSX.writeFile(wb, 'simmons_action_mgmt.xlsx');
 }
 
 function exportT4PDF(){
-  const allYms = Object.keys(_monthlyIssues).sort();
+  const monthlyIssues = getCareActionIssues();
+  const allYms = Object.keys(monthlyIssues).sort();
   if(!allYms.length){ alert('출력할 데이터가 없습니다.'); return; }
 
   const statusColor = {'미시작':'#94a3b8','진행중':'#3b82f6','완료':'#16a34a','보류':'#f59e0b'};
   let tableRows = '';
   let rowNum = 1;
   for(const ym of allYms){
-    const issues = _monthlyIssues[ym]||[];
+    const issues = monthlyIssues[ym]||[];
     if(!issues.length) continue;
     issues.forEach((iss, i) => {
       const saved = loadAct(iss.cat, ym);
       const status = saved.status||'미시작';
       const sc = statusColor[status]||'#94a3b8';
+      const dept = saved.dept!=null ? saved.dept : ((ACTIONS[iss.cat]||{}).owner||'');
       tableRows += `<tr>
         ${i===0 ? `<td rowspan="${issues.length}" style="text-align:center;font-weight:800;background:#f1f5f9;white-space:nowrap">${ym}</td>` : ''}
         <td style="text-align:center">${iss.rank}</td>
         <td style="font-weight:700">${iss.cat}</td>
         <td style="text-align:center">${iss.count}건 (${iss.pct}%)</td>
         <td style="text-align:center;font-weight:700;color:${sc}">${status}</td>
+        <td>${(dept||'').replace(/</g,'&lt;')}</td>
+        <td style="white-space:pre-wrap">${(saved.feedback||'').replace(/</g,'&lt;')}</td>
         <td style="white-space:pre-wrap">${(saved.result||'').replace(/</g,'&lt;')}</td>
       </tr>`;
       rowNum++;
@@ -3271,7 +3358,7 @@ function exportT4PDF(){
   <div class="info">출력일: ${today} · 총 ${rowNum-1}건</div>
   <table>
     <thead><tr>
-      <th>월</th><th>순위</th><th>이슈 카테고리</th><th>건수(비율)</th><th>상태</th><th style="text-align:left;min-width:200px">처리결과 / 진행내용</th>
+      <th>월</th><th>순위</th><th>이슈 카테고리</th><th>건수(비율)</th><th>상태</th><th>담당부서</th><th style="text-align:left;min-width:160px">부서 피드백</th><th style="text-align:left;min-width:160px">진행현황</th>
     </tr></thead>
     <tbody>${tableRows}</tbody>
   </table>
@@ -4364,7 +4451,9 @@ async function loadSupabaseData(){
       praised:       row.praised,
       voc:           row.voc || '',
       issueCategory: row.issue_category,
-      isNegVOC:      row.is_neg_voc
+      isNegVOC:      row.is_neg_voc,
+      caseNo:        row.case_no || '',
+      staffName:     row.staff_name || ''
     }));
     _sortRecsByChannel();
     _avail = [...new Map(
@@ -4401,7 +4490,8 @@ async function saveToSupabase(recs, channel, year, month, fileName, recordCount)
   const rows = recs.map(r => ({
     year:r.year, month:r.month, channel:r.channel, store_type:r.storeType||null,
     score:r.score, praised:['y','예','칭찬','yes','true','1'].includes(String(r.praised||'').toLowerCase()), voc:r.voc||null,
-    issue_category:r.issueCategory, is_neg_voc:r.isNegVOC
+    issue_category:r.issueCategory, is_neg_voc:r.isNegVOC,
+    case_no:r.caseNo||null, staff_name:r.staffName||null
   }));
   const CHUNK = 500;
   const insertedIds = [];
